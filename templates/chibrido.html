@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}
+Criptografía Híbrida
+{% endblock %}
+
+{% block content %}
+<h1>Cifrado Híbrido</h1>
+
+<form method="POST" action="/chibrido/" enctype="multipart/form-data" id="hybrid-encryption-form">
+    <div class="form-group">
+        <label for="file">Seleccionar archivo:</label>
+        <input type="file" name="file" id="file" accept=".txt, .pdf, .docx, .xlsx"> </div>
+    <div class="form-group">
+        <label for="key">Clave pública:</label>
+        <input type="text" name="key" id="key" placeholder="Clave pública" required>
+    </div>
+    <div class="form-group">
+        <label for="mode">Modo:</label>
+        <select name="mode" id="mode">
+            <option value="encrypt">Cifrar</option>
+            <option value="decrypt">Descifrar</option>
+            <option value="hybrid">Híbrido</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Cifrar / Descifrar (Híbrido)</button>
+</form>
+
+
+{% endblock %}

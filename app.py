@@ -1,6 +1,7 @@
 from datetime import datetime
 from flask import Flask, render_template, request
 import functions as f
+from pydrive2 import drive
 
 app = Flask(__name__)
 
@@ -30,6 +31,22 @@ def csimetrico():
 def casimetrico():
     return render_template("casimetrico.html")
 
+@app.route("/chibrido/", methods=['GET','POST'])
+def chibrido():
+    if request.method == 'POST':
+        filename = request.form['filename']
+        key_symmetric = request.form['key_symmetric']
+        key_public = request.form['key_public']
+
+        # Cifrar el archivo
+        ciphertext = f.encrypt_hybrid(filename, key_symmetric, key_public)
+
+        # Subir el archivo cifrado a Google Drive
+        drive.upload_file(ciphertext, filename)
+
+        return render_template('chibrido.html', success=True)
+
+    return render_template('chibrido.html')
 
 @app.route("/about/")
 def about():
