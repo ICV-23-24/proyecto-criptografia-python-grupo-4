@@ -1,6 +1,7 @@
 from datetime import datetime
 from flask import Flask, render_template, request
 import functions as f
+import asimetric as x
 
 app = Flask(__name__)
 
@@ -26,8 +27,23 @@ def csimetrico():
 
     return render_template("csimetrico.html")
 
-@app.route("/casimetrico/")
+@app.route("/casimetrico/", methods=['GET','POST'])
 def casimetrico():
+    
+    if request.method == 'POST':
+        message = request.form['message']
+        private_key, public_key = x.generate_key()
+        # key = request.form['key']
+        mode = request.form['mode']
+
+        if mode == 'encrypt':
+            encrypted_message = x.encrypt(message, public_key)
+            return render_template('casimetrico.html', encrypted_message=encrypted_message, mode=mode)
+        elif mode == 'decrypt':
+            decrypted_message = x.decrypt(encrypted_message, private_key)
+            return render_template('casimetrico.html', decrypted_message=decrypted_message, mode=mode)
+
+
     return render_template("casimetrico.html")
 
 
@@ -58,3 +74,4 @@ def hello_there(name = None):
 @app.route("/api/data")
 def get_data():
     return app.send_static_file("data.json")
+

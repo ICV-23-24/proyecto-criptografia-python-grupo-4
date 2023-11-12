@@ -1,7 +1,38 @@
 {% extends "layout.html" %}
 {% block title %}
-C. Simétrico
+C. Asimétrico
 {% endblock %}
 {% block content %}
-<p>Funcionalidades de cifrado simétrico</p>
+<h1>Encriptar y desencriptar archivos con RSA</h1>
+
+    <h2>Encriptar Mensaje</h2>
+    <form method="post">
+        <label for="message">Mensaje:</label><br>
+        <input type="text" id="message" name="message"><br><br>
+        <!-- <label for="key">Clave:</label><br>
+        <input type="text" id="key" name="key"><br><br> -->
+        <input type="hidden" name="mode" value="encrypt">
+        <input type="submit" value="Encriptado">
+    </form>
+
+    {% if encrypted_message %}
+        <h2>Mensaje Encriptado:</h2>
+        <p>{{ encrypted_message }}</p>
+    {% endif %}
+
+    <h2>Desencriptar Mensaje</h2>
+    <form method="post">
+        <label for="encrypted_message">Mensaje Encriptado:</label><br>
+        <input type="text" id="encrypted_message" name="message"><br><br>
+        <!-- <label for="key_decrypt">Clave:</label><br>
+        <input type="text" id="key_decrypt" name="key"><br><br> -->
+        <input type="hidden" name="mode" value="decrypt">
+        <input type="submit" value="Desencriptado">
+    </form>
+
+    {% if decrypted_message %}
+        <h2>Mensaje:</h2>
+        <p>{{ decrypted_message }}</p>
+    {% endif %}
 {% endblock %}
+
