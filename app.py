@@ -1,6 +1,8 @@
 from datetime import datetime
 from flask import Flask, render_template, request
 import functions as f
+import secrets
+import string
 
 app = Flask(__name__)
 
@@ -10,20 +12,30 @@ app = Flask(__name__)
 def home():
     return render_template("home.html")
 
-@app.route("/csimetrico/", methods=['GET','POST'])
+@app.route("/csimetrico/", methods=['GET', 'POST'])
 def csimetrico():
+    def generar_clave(longitud):
+        caracteres = string.ascii_letters + string.digits
+        clave_aleatoria = ''.join(secrets.choice(caracteres) for i in range(longitud))
+        return clave_aleatoria
+
+    longitud_clave = 12  # Cambia la longitud según tus necesidades
+    key = None
+
     if request.method == 'POST':
         message = request.form['message']
-        key = request.form['key']
         mode = request.form['mode']
 
         if mode == 'encrypt':
+            key = generar_clave(longitud_clave)  # Genera la clave si se elige cifrar
             encrypted_message = f.encrypt_message(message, key)
-            return render_template('csimetrico.html', encrypted_message=encrypted_message, mode=mode)
-        elif mode == 'decrypt':
-            decrypted_message = f.decrypt_message(message, key)
-            return render_template('csimetrico.html', decrypted_message=decrypted_message, mode=mode)
+            return render_template('csimetrico.html', encrypted_message=encrypted_message, clave=key, mode=mode)
 
+        elif mode == 'decrypt':
+            if key is not None:
+                decrypted_message = f.decrypt_message(message, key)
+                return render_template('csimetrico.html', decrypted_message=decrypted_message, mode=mode)
+        
     return render_template("csimetrico.html")
 
 @app.route("/casimetrico/")
