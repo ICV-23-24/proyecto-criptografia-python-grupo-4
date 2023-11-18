@@ -2,6 +2,8 @@ from datetime import datetime
 from flask import Flask, render_template, request
 import functions as f
 import asimetric as x
+import os
+from werkzeug.utils import secure_filename 
 
 app = Flask(__name__)
 
@@ -17,6 +19,15 @@ def csimetrico():
         message = request.form['message']
         key = request.form['key']
         mode = request.form['mode']
+        file     = request.files['archivo']
+        basepath = os.path.dirname (__file__) #La ruta donde se encuentra el archivo actual
+        filename = secure_filename(file.filename) #Nombre original del archivo
+
+        extension           = os.path.splitext(filename)[1]
+        nuevoNombreFile     = f.stringAleatorio() + extension
+     
+        upload_path = os.path.join (basepath, './archivos', nuevoNombreFile) 
+        file.save(upload_path)
 
         if mode == 'encrypt':
             encrypted_message = f.encrypt_message(message, key)
@@ -29,10 +40,14 @@ def csimetrico():
 
 @app.route("/casimetrico/", methods=['GET','POST'])
 def casimetrico():
-    
+
+    global encrypted_message
+
     if request.method == 'POST':
         message = request.form['message']
         private_key, public_key = x.generate_key()
+        print("Public Key:", public_key)
+        print("Private Key:", private_key)
         # key = request.form['key']
         mode = request.form['mode']
 

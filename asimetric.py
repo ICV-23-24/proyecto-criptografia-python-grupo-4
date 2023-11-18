@@ -37,8 +37,11 @@ def decrypt(ciphertext: str, private_key: str) -> str:
     
     return message.decode('utf-8')
 
+encrypted_message = ""
 
-# Script funcional 
+
+
+#Script funcional 
 
 # if __name__ == '__main__':
 #     private_key, public_key = generate_key()
