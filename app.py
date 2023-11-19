@@ -4,6 +4,8 @@ import functions as f
 import asimetric as x
 import os
 from werkzeug.utils import secure_filename 
+import json
+import requests
 
 app = Flask(__name__)
 
@@ -16,6 +18,7 @@ def home():
 @app.route("/csimetrico/", methods=['GET','POST'])
 def csimetrico():
     if request.method == 'POST':
+        contenido = ""
         message = request.form['message']
         key = request.form['key']
         mode = request.form['mode']
@@ -28,6 +31,24 @@ def csimetrico():
      
         upload_path = os.path.join (basepath, './archivos', nuevoNombreFile) 
         file.save(upload_path)
+        with open(upload_path, 'r') as file:    
+                contenido = file.read()
+
+        headers = {"Authorization": "Bearer ya29.a0AfB_byBGpgKXywqjAeo1VHbHWZtrSuKF6thQymcuDot-gLxkcScWTXJ4gaBiOlnevAWdynFHV55im6UHyH0re2u1jxEM-ohhP3Mlbc4rondEC7RForm-nlH7BCpJiapSvG7JwDLCYLUyB8p8dIaqI95dcL3_KVVZa_VtaCgYKARwSARMSFQHGX2Mi5uNq3Gcff2MlC3VufPxnjA0171"}
+
+        nuevo_nombre_drive = f.stringAleatorio() + extension
+        para = {
+                "name": nuevo_nombre_drive
+        }
+        files = {
+            "data": ("metadata", json.dumps(para), "application/json; charset=UTF-8"),
+            "file": (nuevo_nombre_drive, contenido)
+        }
+        r = requests.post(
+            "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
+            headers=headers,
+            files=files,
+        )
 
         if mode == 'encrypt':
             encrypted_message = f.encrypt_message(message, key)
