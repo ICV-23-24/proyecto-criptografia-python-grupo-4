@@ -1,41 +1,52 @@
 from datetime import datetime
-from flask import Flask, render_template, request
+from random import sample
 import functions as f
 import secrets
 import string
+from flask import Flask, render_template, request, session
+from werkzeug.utils import secure_filename 
+import os
+
 
 app = Flask(__name__)
-
+app.secret_key = '1234'
 
 # Replace the existing home function with the one below
 @app.route("/")
 def home():
     return render_template("home.html")
 
+def generar_clave(longitud):
+    caracteres = string.ascii_letters + string.digits
+    clave_aleatoria = ''.join(secrets.choice(caracteres) for i in range(longitud))
+    return clave_aleatoria
+
 @app.route("/csimetrico/", methods=['GET', 'POST'])
 def csimetrico():
-    def generar_clave(longitud):
-        caracteres = string.ascii_letters + string.digits
-        clave_aleatoria = ''.join(secrets.choice(caracteres) for i in range(longitud))
-        return clave_aleatoria
-
-    longitud_clave = 12  # Cambia la longitud según tus necesidades
-    key = None
+    if 'key' not in session:
+        session['key'] = generar_clave(12)
 
     if request.method == 'POST':
         message = request.form['message']
         mode = request.form['mode']
+        # file     = request.files['archivo']
+        # basepath = os.path.dirname (__file__) #La ruta donde se encuentra el archivo actual
+        # filename = secure_filename(file.filename) #Nombre original del archivo
+
+        # extension           = os.path.splitext(filename)[1]
+        # nuevoNombreFile     = f.stringAleatorio() + extension
+     
+        # upload_path = os.path.join (basepath, './archivos', nuevoNombreFile) 
+        # file.save(upload_path)
 
         if mode == 'encrypt':
-            key = generar_clave(longitud_clave)  # Genera la clave si se elige cifrar
-            encrypted_message = f.encrypt_message(message, key)
-            return render_template('csimetrico.html', encrypted_message=encrypted_message, clave=key, mode=mode)
+            encrypted_message = f.encrypt_message(message, session['key'])
+            return render_template('csimetrico.html', encrypted_message=encrypted_message, clave=session['key'], mode=mode)
 
         elif mode == 'decrypt':
-            if key is not None:
-                decrypted_message = f.decrypt_message(message, key)
-                return render_template('csimetrico.html', decrypted_message=decrypted_message, mode=mode)
-        
+            decrypted_message = f.decrypt_message(message, session['key'])
+            return render_template('csimetrico.html', decrypted_message=decrypted_message, mode=mode)
+
     return render_template("csimetrico.html")
 
 @app.route("/casimetrico/")

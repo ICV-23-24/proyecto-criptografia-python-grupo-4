@@ -6,9 +6,18 @@ C. Simétrico
 <h1>Encriptar y desencriptar mensaje con AES</h1>
 
     <h2>Encriptar Mensaje</h2>
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         <label for="message">Mensaje:</label><br>
         <input type="text" id="message" name="message"><br><br>
+        <input type="hidden" name="mode" value="encrypt">
+        <!-- <div class="custom-file">
+            <input type="file" name="archivo" class="custom-file-input" required>
+            <label class="custom-file-label" for="validatedCustomFile">Seleccionar Archivo...</label>
+          </div> -->
+<!--     
+        <div class="form-group mb-5 text-center mt-5">
+            <button type="submit" class="btn btn-primary btn-sm">Enviar Archivo</button>
+        </div> -->
         <input type="hidden" name="mode" value="encrypt">
         <input type="submit" value="Encriptar">
     </form>
