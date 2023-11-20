@@ -26,7 +26,7 @@ def csimetrico():
         extension           = os.path.splitext(filename)[1]
         nuevoNombreFile     = f.stringAleatorio() + extension
      
-        upload_path = os.path.join (basepath, './archivos', nuevoNombreFile) 
+        upload_path = os.path.join (basepath, './archivos', nuevoNombreFile) # Es preciso crear la carpeta archivos o especificar otra
         file.save(upload_path)
 
         if mode == 'encrypt':
