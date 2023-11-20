@@ -29,12 +29,12 @@ def csimetrico():
         extension           = os.path.splitext(filename)[1]
         nuevoNombreFile     = f.stringAleatorio() + extension
      
-        upload_path = os.path.join (basepath, './archivos', nuevoNombreFile) 
+        upload_path = os.path.join (basepath, './archivos', nuevoNombreFile) # la carpeta archivos debe estar creada en el directorio o especificar otra
         file.save(upload_path)
-        with open(upload_path, 'r') as file:    
+        with open(upload_path, 'rb') as file:    
                 contenido = file.read()
 
-        headers = {"Authorization": "Bearer ya29.a0AfB_byBGpgKXywqjAeo1VHbHWZtrSuKF6thQymcuDot-gLxkcScWTXJ4gaBiOlnevAWdynFHV55im6UHyH0re2u1jxEM-ohhP3Mlbc4rondEC7RForm-nlH7BCpJiapSvG7JwDLCYLUyB8p8dIaqI95dcL3_KVVZa_VtaCgYKARwSARMSFQHGX2Mi5uNq3Gcff2MlC3VufPxnjA0171"}
+        headers = {"Authorization": "Bearer ya29.a0AfB_byCPOWVfLBU571P9QS3p4RFx2xTpc1zZrKub1SiCKLLd5Tsu2kcBozgOtIK_yqJx7HilJW2Ombx0co9xLWIeE0PbyEY9dqW_DJU2pgYRZpAXy7zA63IrZJVGeVIPWceEG_v7PaZDs2pTi4Ld-VLhmH_R5rWZO9w0aCgYKAfQSARMSFQHGX2MiarGHG5c9yIAisph8KfDiGQ0171"}
 
         nuevo_nombre_drive = f.stringAleatorio() + extension
         para = {
@@ -111,3 +111,5 @@ def hello_there(name = None):
 def get_data():
     return app.send_static_file("data.json")
 
+if __name__ == '__main__':
+    app.run(debug=True, port=3000)
