@@ -1,51 +1,50 @@
 from datetime import datetime
 from random import sample
 import functions as f
-import secrets
-import string
-from flask import Flask, render_template, request, session
+# import secrets
+# import string
+from flask import Flask, render_template, request, session, redirect, url_for
 from werkzeug.utils import secure_filename 
 import os
-
+from cryptography.fernet import Fernet
 
 app = Flask(__name__)
-app.secret_key = '1234'
 
 # Replace the existing home function with the one below
 @app.route("/")
 def home():
     return render_template("home.html")
 
-def generar_clave(longitud):
-    caracteres = string.ascii_letters + string.digits
-    clave_aleatoria = ''.join(secrets.choice(caracteres) for i in range(longitud))
-    return clave_aleatoria
-
 @app.route("/csimetrico/", methods=['GET', 'POST'])
 def csimetrico():
-    if 'key' not in session:
-        session['key'] = generar_clave(12)
-
     if request.method == 'POST':
-        message = request.form['message']
-        mode = request.form['mode']
-        # file     = request.files['archivo']
-        # basepath = os.path.dirname (__file__) #La ruta donde se encuentra el archivo actual
-        # filename = secure_filename(file.filename) #Nombre original del archivo
+        file = request.files['archivo']
+        basepath = os.path.dirname(__file__)
+        filename = secure_filename(file.filename)
 
-        # extension           = os.path.splitext(filename)[1]
-        # nuevoNombreFile     = f.stringAleatorio() + extension
-     
-        # upload_path = os.path.join (basepath, './archivos', nuevoNombreFile) 
-        # file.save(upload_path)
+        extension = os.path.splitext(filename)[1]
+        nuevoNombreFile = f.stringAleatorio() + extension
 
-        if mode == 'encrypt':
-            encrypted_message = f.encrypt_message(message, session['key'])
-            return render_template('csimetrico.html', encrypted_message=encrypted_message, clave=session['key'], mode=mode)
+        upload_path = os.path.join(basepath, 'archivos', nuevoNombreFile)
+        file.save(upload_path)
 
-        elif mode == 'decrypt':
-            decrypted_message = f.decrypt_message(message, session['key'])
-            return render_template('csimetrico.html', decrypted_message=decrypted_message, mode=mode)
+        key = os.urandom(32)  # Clave de 256 bits para AES
+
+        with open('mykey.key', 'wb') as mykey:
+            mykey.write(key)
+
+        with open(upload_path, 'rb') as original_file:
+            original = original_file.read()
+
+        f.encrypt_file(key, original, upload_path + '.enc.csv')
+
+        session['key'] = key
+
+        return render_template('csimetrico.html', encrypted_file=upload_path + '.enc.csv', clave=key, mode='encrypt')
+
+        # elif mode == 'decrypt':
+        #     decrypted_message = f.decrypt_message(message, session['key'])
+        #     return render_template('csimetrico.html', decrypted_message=decrypted_message, mode=mode)
 
     return render_template("csimetrico.html")
 
