@@ -9,6 +9,7 @@ import os
 from cryptography.fernet import Fernet
 
 app = Flask(__name__)
+app.secret_key = b'1234'
 
 # Replace the existing home function with the one below
 @app.route("/")
@@ -28,19 +29,19 @@ def csimetrico():
         upload_path = os.path.join(basepath, 'archivos', nuevoNombreFile)
         file.save(upload_path)
 
-        key = os.urandom(32)  # Clave de 256 bits para AES
+        file_key = os.urandom(32)  # Clave de 256 bits para el archivo
 
         with open('mykey.key', 'wb') as mykey:
-            mykey.write(key)
+            mykey.write(file_key)
 
         with open(upload_path, 'rb') as original_file:
             original = original_file.read()
 
-        f.encrypt_file(key, original, upload_path + '.enc.csv')
+        f.encrypt_file(file_key, original, upload_path + '.enc.csv')
 
-        session['key'] = key
+        session['file_key'] = file_key  # Almacena la clave del archivo en la sesión
 
-        return render_template('csimetrico.html', encrypted_file=upload_path + '.enc.csv', clave=key, mode='encrypt')
+        return render_template('csimetrico.html', encrypted_file=upload_path + '.enc.csv', clave=file_key, mode='encrypt')
 
         # elif mode == 'decrypt':
         #     decrypted_message = f.decrypt_message(message, session['key'])
