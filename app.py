@@ -23,36 +23,38 @@ def csimetrico():
         key = request.form['key']
         mode = request.form['mode']
         file     = request.files['archivo']
-        basepath = os.path.dirname (__file__) #La ruta donde se encuentra el archivo actual
-        filename = secure_filename(file.filename) #Nombre original del archivo
+        # contenido = ""
+        # basepath = os.path.dirname (__file__) #La ruta donde se encuentra el archivo actual
+        # filename = secure_filename(file.filename) #Nombre original del archivo
 
-        extension           = os.path.splitext(filename)[1]
-        nuevoNombreFile     = f.stringAleatorio() + extension
+        # extension           = os.path.splitext(filename)[1]
+        # nuevoNombreFile     = f.stringAleatorio() + extension
      
-        upload_path = os.path.join (basepath, './archivos', nuevoNombreFile) 
-        file.save(upload_path)
-        with open(upload_path, 'rb') as file:    
-                contenido = file.read()
+        # upload_path = os.path.join (basepath, './archivos', nuevoNombreFile) 
+        # file.save(upload_path)
+        # with open(upload_path, 'rb') as file:    
+        #         contenido = file.read()
 
-        headers = {"Authorization": "Bearer ya29.a0AfB_byCPOWVfLBU571P9QS3p4RFx2xTpc1zZrKub1SiCKLLd5Tsu2kcBozgOtIK_yqJx7HilJW2Ombx0co9xLWIeE0PbyEY9dqW_DJU2pgYRZpAXy7zA63IrZJVGeVIPWceEG_v7PaZDs2pTi4Ld-VLhmH_R5rWZO9w0aCgYKAfQSARMSFQHGX2MiarGHG5c9yIAisph8KfDiGQ0171"}
+        # headers = {"Authorization": "Bearer ya29.a0AfB_byCPOWVfLBU571P9QS3p4RFx2xTpc1zZrKub1SiCKLLd5Tsu2kcBozgOtIK_yqJx7HilJW2Ombx0co9xLWIeE0PbyEY9dqW_DJU2pgYRZpAXy7zA63IrZJVGeVIPWceEG_v7PaZDs2pTi4Ld-VLhmH_R5rWZO9w0aCgYKAfQSARMSFQHGX2MiarGHG5c9yIAisph8KfDiGQ0171"}
 
-        nuevo_nombre_drive = f.stringAleatorio() + extension
-        para = {
-                "name": nuevo_nombre_drive
-        }
-        files = {
-            "data": ("metadata", json.dumps(para), "application/json; charset=UTF-8"),
-            "file": (nuevo_nombre_drive, contenido)
-        }
-        r = requests.post(
-            "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
-            headers=headers,
-            files=files,
-        )
+        # nuevo_nombre_drive = f.stringAleatorio() + extension
+        # para = {
+        #         "name": nuevo_nombre_drive
+        # }
+        # files = {
+        #     "data": ("metadata", json.dumps(para), "application/json; charset=UTF-8"),
+        #     "file": (nuevo_nombre_drive, contenido)
+        # }
+        # r = requests.post(
+        #     "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
+        #     headers=headers,
+        #     files=files,
+        # )
 
         if mode == 'encrypt':
             encrypted_message = f.encrypt_message(message, key)
-            return render_template('csimetrico.html', encrypted_message=encrypted_message, mode=mode)
+            subir_archivo = f.select_file(file,contenido)
+            return render_template('csimetrico.html', subir_archivo=subir_archivo,encrypted_message=encrypted_message, mode=mode)
         elif mode == 'decrypt':
             decrypted_message = f.decrypt_message(message, key)
             return render_template('csimetrico.html', decrypted_message=decrypted_message, mode=mode)
