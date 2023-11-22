@@ -1,8 +1,6 @@
 from datetime import datetime
 from random import sample
 import functions as f
-# import secrets
-# import string
 from flask import Flask, render_template, request, session, redirect, url_for
 from werkzeug.utils import secure_filename 
 import os
@@ -18,7 +16,11 @@ def home():
 
 @app.route("/csimetrico/", methods=['GET', 'POST'])
 def csimetrico():
+    archivos_en_carpeta = os.listdir('./archivos')
+    
+    archivo_seleccionado = None
     if request.method == 'POST':
+        archivo_seleccionado = request.form.get('archivo')
         file = request.files['archivo']
         basepath = os.path.dirname(__file__)
         filename = secure_filename(file.filename)
@@ -29,7 +31,7 @@ def csimetrico():
         upload_path = os.path.join(basepath, 'archivos', nuevoNombreFile)
         file.save(upload_path)
 
-        file_key = os.urandom(32)  # Clave de 256 bits para el archivo
+        file_key = os.urandom(32)
 
         with open('mykey.key', 'wb') as mykey:
             mykey.write(file_key)
@@ -41,7 +43,7 @@ def csimetrico():
 
         session['file_key'] = file_key  # Almacena la clave del archivo en la sesión
 
-        return render_template('csimetrico.html', encrypted_file=upload_path + '.enc.csv', clave=file_key, mode='encrypt')
+        return render_template('csimetrico.html', encrypted_file=upload_path + '.enc.csv', clave=file_key, mode='encrypt',  archivos=archivos_en_carpeta, archivo_seleccionado=archivo_seleccionado)
 
         # elif mode == 'decrypt':
         #     decrypted_message = f.decrypt_message(message, session['key'])

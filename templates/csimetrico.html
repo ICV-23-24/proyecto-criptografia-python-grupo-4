@@ -27,8 +27,14 @@ C. Simétrico
 
     <h2>Desencriptar Mensaje</h2>
     <form method="post">
-        <label for="encrypted_message">Mensaje Encriptado:</label><br>
-        <input type="text" id="encrypted_message" name="message"><br><br>
+        <form method="post" action="/">
+            <label for="archivos">Selecciona un archivo:</label>
+            <select name="archivo" id="archivos">
+                {% for archivo in archivos %}
+                    <option value="{{ archivo }}">{{ archivo }}</option>
+                {% endfor %}
+            </select>
+        </form>  
         <label for="key_decrypt">Clave:</label><br>
         <input type="text" id="key_decrypt" name="key"><br><br>  <!-- Cambia 'name' a 'key' -->
         <input type="hidden" name="mode" value="decrypt">

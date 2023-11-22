@@ -1,4 +1,6 @@
 from random import sample
+import secrets
+import string
 from Cryptodome.Cipher import AES
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
@@ -14,6 +16,11 @@ def encrypt_file(key, plaintext, output_filename):
     with open(output_filename, 'wb') as encrypted_file:
         encrypted_file.write(ciphertext)
 
+# def generar_clave(longitud):
+#     caracteres = string.ascii_letters + string.digits
+#     clave_aleatoria = ''.join(secrets.choice(caracteres) for i in range(longitud))
+#     return clave_aleatoria
+
 # def decrypt_message(message, key):
 #     key = key.encode('utf-8')
 #     cipher = AES.new(pad(key, AES.block_size), AES.MODE_ECB)
@@ -28,3 +35,5 @@ def stringAleatorio():
     resultado_aleatorio  = sample(secuencia, longitud)
     string_aleatorio     = "".join(resultado_aleatorio)
     return string_aleatorio
+
+
