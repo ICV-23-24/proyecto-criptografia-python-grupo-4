@@ -21,11 +21,15 @@ def encrypt_file(key, plaintext, output_filename):
 #     clave_aleatoria = ''.join(secrets.choice(caracteres) for i in range(longitud))
 #     return clave_aleatoria
 
-# def decrypt_message(message, key):
-#     key = key.encode('utf-8')
-#     cipher = AES.new(pad(key, AES.block_size), AES.MODE_ECB)
-#     decrypted_message = unpad(cipher.decrypt(b64decode(message)), AES.block_size).decode('utf-8')
-#     return decrypted_message
+def decrypt_file(key, ciphertext, output_filename):
+    backend = default_backend()
+    cipher = Cipher(algorithms.AES(key), modes.CFB(os.urandom(16)), backend=backend)
+    decryptor = cipher.decryptor()
+
+    plaintext = decryptor.update(ciphertext) + decryptor.finalize()
+
+    with open(output_filename, 'wb') as decrypted_file:
+        decrypted_file.write(plaintext)
 
 def stringAleatorio():
     #Generando string aleatorio
@@ -36,4 +40,10 @@ def stringAleatorio():
     string_aleatorio     = "".join(resultado_aleatorio)
     return string_aleatorio
 
+def save_key_to_file(file_key, key_filename):
+    with open(key_filename, 'wb') as key_file:
+        key_file.write(file_key)
 
+def read_key_from_file(key_filename):
+    with open(key_filename, 'rb') as key_file:
+        return key_file.read()
