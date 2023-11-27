@@ -20,11 +20,6 @@ C. Simétrico
         <input type="submit" value="Encriptar">
     </form>
 
-    {% if encrypted_message %}
-        <p>Mensaje Encriptado: {{ encrypted_message }}</p>
-        <p>Clave generada: {{ clave }}</p>
-    {% endif %}
-
     <h2>Desencriptar Mensaje</h2>
     <form method="post">
         <form method="post" action="/">
@@ -35,9 +30,8 @@ C. Simétrico
                 {% endfor %}
             </select>
         </form>  
-        <label for="key_decrypt">Clave:</label><br>
         <form method="post" action="/">
-            <label for="archivos">Selecciona un clave:</label>
+            <label for="claves">Selecciona una clave:</label>
             <select name="clave" id="claves">
                 {% for clave in claves %}
                     <option value="{{ clave }}">{{ clave }}</option>
