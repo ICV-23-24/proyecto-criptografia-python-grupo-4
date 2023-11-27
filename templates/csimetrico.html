@@ -1,4 +1,3 @@
-{% extends "layout.html" %}
 {% block title %}
 C. Simétrico
 {% endblock %}
@@ -21,28 +20,25 @@ C. Simétrico
     </form>
 
     <h2>Desencriptar Mensaje</h2>
-    <form method="post">
-        <form method="post" action="/">
-            <label for="archivos">Selecciona un archivo:</label>
-            <select name="archivo" id="archivos">
-                {% for archivo in archivos %}
-                    <option value="{{ archivo }}">{{ archivo }}</option>
-                {% endfor %}
-            </select>
-        </form>  
-        <form method="post" action="/">
-            <label for="claves">Selecciona una clave:</label>
-            <select name="clave" id="claves">
-                {% for clave in claves %}
-                    <option value="{{ clave }}">{{ clave }}</option>
-                {% endfor %}
-            </select>
-        </form>
+    <form method="post" enctype="multipart/form-data">
+        <label for="archivos">Selecciona un archivo:</label>
+        <select name="archivo" id="archivos">
+            {% for archivo in archivos %}
+                <option value="{{ archivo }}">{{ archivo }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="claves">Selecciona una clave:</label>
+        <select name="clave" id="claves">
+            {% for clave in claves %}
+                <option value="{{ clave }}">{{ clave }}</option>
+            {% endfor %}
+        </select>
         <input type="hidden" name="mode" value="decrypt">
         <input type="submit" value="Desencriptar">
     </form>
     
-    {% if decrypted_message %}
-        <p>Mensaje desencriptado: {{ decrypted_message }}</p>
+    {% if decrypted_file %}
+        <p>Archivo desencriptado: {{ decrypted_file }}</p>
     {% endif %}
 {% endblock %}

@@ -26,15 +26,6 @@ def decrypt_file(key, ciphertext, output_filename):
     with open(output_filename, 'wb') as decrypted_file:
         decrypted_file.write(plaintext)
 
-# def stringAleatorio():
-#     #Generando string aleatorio
-#     string_aleatorio = "0123456789abcdefghijklmnopqrstuvwxyz_"
-#     longitud         = 20
-#     secuencia        = string_aleatorio.upper()
-#     resultado_aleatorio  = sample(secuencia, longitud)
-#     string_aleatorio     = "".join(resultado_aleatorio)
-#     return string_aleatorio
-
 def save_key_to_file(file_key, key_filename):
     with open(key_filename, 'wb') as key_file:
         key_file.write(file_key)

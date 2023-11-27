@@ -1,10 +1,9 @@
 from datetime import datetime
-from random import sample
+import webbrowser
 import functions as f
 from flask import Flask, render_template, request, session, redirect, url_for
 from werkzeug.utils import secure_filename 
 import os
-from cryptography.fernet import Fernet
 
 app = Flask(__name__)
 app.secret_key = b'1234'
@@ -20,7 +19,6 @@ def csimetrico():
     print("Claves:", claves)
         
     archivo_seleccionado = None
-    mode = None  # Define the 'mode' variable
 
     if request.method == 'POST':
         print("Form data received:", request.form)
@@ -39,7 +37,7 @@ def csimetrico():
         with open(upload_path, 'rb') as original_file:
             original = original_file.read()
 
-        mode = request.form.get('mode')
+        mode = request.form['mode']
         claves = [filename for filename in os.listdir('./claves') if filename.endswith('.key')]
         print("Claves after form submission:", claves)
 
@@ -49,9 +47,12 @@ def csimetrico():
             return render_template('csimetrico.html', encrypted_file=upload_path + '.enc.csv', clave=file_key, archivos=archivos_en_carpeta, archivo_seleccionado=archivo_seleccionado, mode=mode, claves=claves)
 
         elif mode == 'decrypt':
-            decrypted_file_path = upload_path.replace('.enc.csv', '_decrypted.csv')
-            f.decrypt_file(file_key, original, decrypted_file_path)
+            key_filename = os.path.join(basepath, 'claves', f'{filename}.key')
             file_key = f.read_key_from_file(key_filename)
+            decrypted_file_path = os.path.join(basepath, 'archivos_desencriptados', f'{filename}_decrypted.csv')
+            f.decrypt_file(file_key, original, decrypted_file_path)
+            print("Decrypted file path:", decrypted_file_path)
+            webbrowser.open(decrypted_file_path)
             return render_template('csimetrico.html', decrypted_file=decrypted_file_path, archivo_seleccionado=archivo_seleccionado, mode=mode, claves=claves)
 
     return render_template("csimetrico.html", claves=claves)
@@ -73,8 +74,6 @@ def doc():
 def otro():
     return render_template("otro.html")
 
-
-
 @app.route("/hello/")
 @app.route("/hello/<name>")
 def hello_there(name = None):
@@ -83,7 +82,6 @@ def hello_there(name = None):
         name=name,
         date=datetime.now()
     )
-
 
 @app.route("/api/data")
 def get_data():
