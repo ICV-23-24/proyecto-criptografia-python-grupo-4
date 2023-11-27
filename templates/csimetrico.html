@@ -36,7 +36,14 @@ C. Simétrico
             </select>
         </form>  
         <label for="key_decrypt">Clave:</label><br>
-        <input type="text" id="key_decrypt" name="key"><br><br>  <!-- Cambia 'name' a 'key' -->
+        <form method="post" action="/">
+            <label for="archivos">Selecciona un clave:</label>
+            <select name="clave" id="claves">
+                {% for clave in claves %}
+                    <option value="{{ clave }}">{{ clave }}</option>
+                {% endfor %}
+            </select>
+        </form>
         <input type="hidden" name="mode" value="decrypt">
         <input type="submit" value="Desencriptar">
     </form>
