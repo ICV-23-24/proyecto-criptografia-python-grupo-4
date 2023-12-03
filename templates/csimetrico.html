@@ -10,16 +10,8 @@ C. Simétrico
         <input type="file" name="archivo"><br><br>
         <label for="archivo_nombre">Nombre del Archivo:</label>
         <input type="text" id="archivo_nombre" name="archivo_nombre" required><br><br>
-        <label for="key">Clave:</label><br>
+        <label for="key">Clave:</label>
         <input type="text" id="key" name="key"><br><br>
-        
-        <input type="file" name="archivo" class="custom-file-input" required>
-        <label class="custom-file-label" for="validatedCustomFile"></label><br><br>
-    
-    
-        <div class="form-group mb-5 text-center mt-5">
-            <button type="submit" class="btn btn-primary btn-sm">Enviar Archivo</button><br><br>
-        </div>
         <input type="hidden" name="mode" value="encrypt">
         <input type="submit" value="Encriptar">
     </form>
@@ -42,7 +34,12 @@ C. Simétrico
         </select>
         <br><br>
         <label for="key_decrypt">Clave:</label><br>
-        <input type="text" id="key_decrypt" name="key"><br><br>
+        <select name="key_decrypt" id="key_decrypt">
+            {% for clave in listado_claves %}
+                <option value="{{ clave }}">{{ clave }}</option>
+            {% endfor %}
+        </select>
+        <!-- <input type="text" id="key_decrypt" name="key"><br><br> -->
         <input type="hidden" name="mode" value="decrypt">
         <input type="submit" value="Desencriptar">
     </form>
