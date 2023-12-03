@@ -58,8 +58,27 @@ def csimetrico():
 
     return render_template("csimetrico.html")
 
-@app.route("/casimetrico/")
+@app.route("/casimetrico/", methods=['GET','POST'])
 def casimetrico():
+
+    global encrypted_message
+
+    if request.method == 'POST':
+        message = request.form['message']
+        private_key, public_key = x.generate_key()
+        print("Public Key:", public_key)
+        print("Private Key:", private_key)
+        # key = request.form['key']
+        mode = request.form['mode']
+
+        if mode == 'encrypt':
+            encrypted_message = x.encrypt(message, public_key)
+            return render_template('casimetrico.html', encrypted_message=encrypted_message, mode=mode)
+        elif mode == 'decrypt':
+            decrypted_message = x.decrypt(encrypted_message, private_key)
+            return render_template('casimetrico.html', decrypted_message=decrypted_message, mode=mode)
+
+
     return render_template("casimetrico.html")
 
 
