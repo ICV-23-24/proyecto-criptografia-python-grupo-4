@@ -3,52 +3,91 @@
 C. Simétrico
 {% endblock %}
 {% block content %}
-<h1>Encriptar y desencriptar mensaje con AES</h1>
+<div style="display: flex; justify-content: space-between;">
 
-    <h2>Encriptar Mensaje</h2>
-    <form action="/csimetrico" method="post" enctype="multipart/form-data">
-        <input type="file" name="archivo"><br><br>
-        <label for="archivo_nombre">Nombre del Archivo:</label>
-        <input type="text" id="archivo_nombre" name="archivo_nombre" required><br><br>
-        <label for="key">Clave:</label>
-        <input type="text" id="key" name="key"><br><br>
-        <input type="hidden" name="mode" value="encrypt">
-        <input type="submit" value="Encriptar">
-    </form>
-    
-    {% if encrypted_message %}
-        <h2>Mensaje Encriptado:</h2>
-        <p>{{ encrypted_message }}</p>
-        <h2>Contenido del mensaje:</h2>
-        <p>{{ contenido }}</p>
-    {% endif %}
+    <div style="width: 48%;">
+        <h1>Encriptar y desencriptar mensaje con AES</h1>
+        <h2>Encriptar Mensaje</h2>
+        <form action="/csimetrico" method="post" enctype="multipart/form-data">
+            <input type="file" name="archivo"><br><br>
+            <label for="archivo_nombre">Nombre del Archivo:</label>
+            <input type="text" id="archivo_nombre" name="archivo_nombre" required><br><br>
+            <label for="key">Clave:</label>
+            <input type="text" id="key" name="key"><br><br>
+            <input type="hidden" name="algoritmo" value="AES">
+            <input type="hidden" name="mode" value="encrypt">
+            <input type="submit" value="Encriptar">
+        </form>
 
-    
-    <h2>Desencriptar Mensaje</h2>
-    <form action="/csimetrico" method="post" enctype="multipart/form-data">
-        <label for="documento">Fichero a desencriptar:</label>
-        <select name="archivo" id="archivo2">
-            {% for archivo in listado_archivos %}
-                <option value="{{ archivo }}">{{ archivo }}</option>
-            {% endfor %}
-        </select>
-        <br><br>
-        <label for="key_decrypt">Clave:</label><br>
-        <select name="key_decrypt" id="key_decrypt">
-            {% for clave in listado_claves %}
-                <option value="{{ clave }}">{{ clave }}</option>
-            {% endfor %}
-        </select>
-        <!-- <input type="text" id="key_decrypt" name="key"><br><br> -->
-        <input type="hidden" name="mode" value="decrypt">
-        <input type="submit" value="Desencriptar">
-    </form>
+        {% if encrypted_message_aes %}
+            <h2>Mensaje Encriptado (AES):</h2>
+            <p>{{ encrypted_message_aes }}</p>
+            <h2>Contenido del mensaje:</h2>
+            <p>{{ contenido_aes }}</p>
+        {% endif %}
 
-    <h2>Contenido del archivo seleccionado:</h2>
-      <p>{{ contenido2 }}</p>
+        <h2>Desencriptar Mensaje</h2>
+        <form action="/csimetrico" method="post" enctype="multipart/form-data">
+            <label for="documento">Fichero a desencriptar:</label>
+            <select name="archivo" id="archivo2">
+                {% for archivo in listado_archivos_aes %}
+                    <option value="{{ archivo }}">{{ archivo }}</option>
+                {% endfor %}
+            </select>
+            <br><br>
+            <label for="key_decrypt">Clave:</label><br>
+            <select name="key_decrypt" id="key_decrypt">
+                {% for clave in listado_claves_aes %}
+                    <option value="{{ clave }}">{{ clave }}</option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="algoritmo" value="AES">
+            <input type="hidden" name="mode" value="decrypt">
+            <input type="submit" value="Desencriptar">
+        </form>
+    </div>
 
-    {% if decrypted_message %}
-        <h2>Mensaje:</h2>
-        <p>{{ decrypted_message }}</p>
-    {% endif %}
+    <div style="width: 48%;">
+        <h1>Encriptar y desencriptar mensaje con 3DES</h1>
+        <h2>Encriptar Mensaje</h2>
+        <form action="/csimetrico" method="post" enctype="multipart/form-data">
+            <input type="file" name="archivo"><br><br>
+            <label for="archivo_nombre">Nombre del Archivo:</label>
+            <input type="text" id="archivo_nombre" name="archivo_nombre" required><br><br>
+            <label for="key">Clave:</label>
+            <input type="text" id="key" name="key"><br><br>
+            <input type="hidden" name="algoritmo" value="3DES">
+            <input type="hidden" name="mode" value="encrypt">
+            <input type="submit" value="Encriptar">
+        </form>
+
+        {% if encrypted_message_3des %}
+            <h2>Mensaje Encriptado (3DES):</h2>
+            <p>{{ encrypted_message_3des }}</p>
+            <h2>Contenido del mensaje:</h2>
+            <p>{{ contenido_3des }}</p>
+        {% endif %}
+
+        <h2>Desencriptar Mensaje</h2>
+        <form action="/csimetrico" method="post" enctype="multipart/form-data">
+            <label for="documento">Fichero a desencriptar:</label>
+            <select name="archivo" id="archivo2">
+                {% for archivo in listado_archivos_3des %}
+                    <option value="{{ archivo }}">{{ archivo }}</option>
+                {% endfor %}
+            </select>
+            <br><br>
+            <label for="key_decrypt">Clave:</label><br>
+            <select name="key_decrypt" id="key_decrypt">
+                {% for clave in listado_claves_3des %}
+                    <option value="{{ clave }}">{{ clave }}</option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="algoritmo" value="3DES">
+            <input type="hidden" name="mode" value="decrypt">
+            <input type="submit" value="Desencriptar">
+        </form>
+    </div>
+
+</div>
 {% endblock %}
