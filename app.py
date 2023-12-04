@@ -1,60 +1,70 @@
 from datetime import datetime
-from random import sample
-import functions as f
-from flask import Flask, render_template, request, session, redirect, url_for
-from werkzeug.utils import secure_filename 
 import os
-from cryptography.fernet import Fernet
+from flask import Flask, render_template, request
+import functions as f
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.secret_key = b'1234'
 
+
+# Replace the existing home function with the one below
 @app.route("/")
 def home():
     return render_template("home.html")
 
-@app.route("/csimetrico/", methods=['GET', 'POST'])
+@app.route('/csimetrico', methods=['GET', 'POST'])
 def csimetrico():
-    archivos_en_carpeta = os.listdir('./archivos')
-    claves = [filename for filename in archivos_en_carpeta if filename.endswith('.key')]
-    print("Claves:", claves)
-        
-    archivo_seleccionado = None
-    mode = None  # Define the 'mode' variable
-
     if request.method == 'POST':
-        print("Form data received:", request.form)
-        archivo_seleccionado = request.form.get('archivo')
-        file = request.files['archivo']
-        basepath = os.path.dirname(__file__)
-        filename = secure_filename(file.filename)
-
-        upload_path = os.path.join(basepath, 'archivos', filename)
-        file.save(upload_path)
-
-        key_filename = os.path.join(basepath, 'claves', f'{filename}.key')
-
-        file_key = os.urandom(32)
-
-        with open(upload_path, 'rb') as original_file:
-            original = original_file.read()
-
-        mode = request.form.get('mode')
-        claves = [filename for filename in os.listdir('./claves') if filename.endswith('.key')]
-        print("Claves after form submission:", claves)
+        archivos = request.files.getlist('archivo')
+        archivo2 = request.form.get('archivo')
+        key_decrypt = request.form.get('key_decrypt')
+        key = request.form.get('key')
+        mode = request.form['mode']
+        listado_archivos = []
+        listado_claves = []
+        ruta = './archivos'
+        rutaclaves = './claves'
 
         if mode == 'encrypt':
-            f.encrypt_file(file_key, original, upload_path + '.enc.csv')
-            f.save_key_to_file(file_key, key_filename)
-            return render_template('csimetrico.html', encrypted_file=upload_path + '.enc.csv', clave=file_key, archivos=archivos_en_carpeta, archivo_seleccionado=archivo_seleccionado, mode=mode, claves=claves)
+            docu = archivos[0]
+            contenido = docu.read().decode('utf-8')
+            nuevo_nombre = request.form['archivo_nombre']
+            filename = secure_filename(nuevo_nombre + "_encriptado.txt")
+            algoritmo = request.form['algoritmo']  # Nuevo campo para seleccionar el algoritmo
 
+            if algoritmo not in ['AES', '3DES']:
+                return render_template('csimetrico.html', error="Algoritmo no válido")
+
+            clave = f.generar_cadena()  # Genera una clave aleatoria (puedes cambiarlo)
+            nombre_archivo = secure_filename(key + "_clave.txt")
+            with open(os.path.join(rutaclaves, nombre_archivo), "w") as file2:
+                file2.write(clave)
+
+            encrypted_message = f.encrypt_message(contenido, clave, algoritmo)
+            with open(os.path.join(ruta, filename), "w") as file:
+                file.write(encrypted_message)
+
+            listado_archivos = f.listar(ruta)
+            listado_claves = f.listarclaves(rutaclaves)
+            return render_template('csimetrico.html', listado_claves=listado_claves, listado_archivos=listado_archivos,
+                                   encrypted_message=encrypted_message, contenido=contenido, mode=mode)
         elif mode == 'decrypt':
-            decrypted_file_path = upload_path.replace('.enc.csv', '_decrypted.csv')
-            f.decrypt_file(file_key, original, decrypted_file_path)
-            file_key = f.read_key_from_file(key_filename)
-            return render_template('csimetrico.html', decrypted_file=decrypted_file_path, archivo_seleccionado=archivo_seleccionado, mode=mode, claves=claves)
+            listado_archivos = f.listar(ruta)
+            ruta_completa = os.path.join(ruta, archivo2)
+            with open(ruta_completa, 'r') as file:
+                contenido2 = file.read()
 
-    return render_template("csimetrico.html", claves=claves)
+            rutaclaves = './claves'
+            listado_claves = f.listarclaves(rutaclaves)
+            ruta_completa2 = os.path.join(rutaclaves, key_decrypt)
+            with open(ruta_completa2, 'r') as file2:
+                contenidoclave = file2.read()
+
+            decrypted_message = f.decrypt_message(contenido2, contenidoclave, algoritmo)
+            return render_template('csimetrico.html', listado_claves=listado_claves, listado_archivos=listado_archivos,
+                                   contenido2=contenido2, decrypted_message=decrypted_message, mode=mode)
+
+    return render_template("csimetrico.html")
 
 @app.route("/casimetrico/")
 def casimetrico():
@@ -88,3 +98,8 @@ def hello_there(name = None):
 @app.route("/api/data")
 def get_data():
     return app.send_static_file("data.json")
+
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
+
