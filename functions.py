@@ -63,10 +63,17 @@ def generar_cadena(longitud=16):
 
 def encrypt_message(contenido, clave, algoritmo):
     if algoritmo == 'AES':
-        cipher = AES.new(pad(clave.encode('utf-8'), AES.block_size), AES.MODE_ECB)
+        if len(clave) != 16:
+            raise ValueError("La clave para AES debe ser de 16 bytes")
+        cipher = AES.new(clave.encode('utf-8'), AES.MODE_ECB)
     elif algoritmo == '3DES':
-        clave = clave.encode('utf-8')[:24]  # Asegurar que la clave tenga longitud válida para 3DES
-        cipher = DES3.new(clave, DES3.MODE_ECB)
+        if len(clave) < 24:
+            clave = clave.ljust(24, '\0')
+        elif len(clave) > 24:
+            clave = clave[:24]
+        if len(clave) != 24:
+            raise ValueError("La clave para 3DES debe ser de 24 bytes")
+        cipher = DES3.new(clave.encode('utf-8'), DES3.MODE_ECB)
     else:
         raise ValueError("Algoritmo de cifrado no válido")
 
@@ -76,10 +83,13 @@ def encrypt_message(contenido, clave, algoritmo):
 # Función para desencriptar un mensaje usando AES o 3DES
 def decrypt_message(contenido, contenidoclave, algoritmo):
     if algoritmo == 'AES':
-        cipher = AES.new(pad(contenidoclave.encode('utf-8'), AES.block_size), AES.MODE_ECB)
+        if len(contenidoclave) != 16:
+            raise ValueError("La clave para AES debe ser de 16 bytes")
+        cipher = AES.new(contenidoclave.encode('utf-8'), AES.MODE_ECB)
     elif algoritmo == '3DES':
-        contenidoclave = contenidoclave.encode('utf-8')[:24]  # Asegurar que la clave tenga longitud válida para 3DES
-        cipher = DES3.new(contenidoclave, DES3.MODE_ECB)
+        if len(contenidoclave) != 24:
+            raise ValueError("La clave para 3DES debe ser de 24 bytes")
+        cipher = DES3.new(contenidoclave.encode('utf-8'), DES3.MODE_ECB)
     else:
         raise ValueError("Algoritmo de cifrado no válido")
 

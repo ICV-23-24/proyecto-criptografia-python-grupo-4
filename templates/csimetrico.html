@@ -30,14 +30,14 @@ C. Simétrico
         <form action="/csimetrico" method="post" enctype="multipart/form-data">
             <label for="documento">Fichero a desencriptar:</label>
             <select name="archivo" id="archivo2">
-                {% for archivo in listado_archivos_aes %}
+                {% for archivo in listado_archivos %}
                     <option value="{{ archivo }}">{{ archivo }}</option>
                 {% endfor %}
             </select>
             <br><br>
             <label for="key_decrypt">Clave:</label><br>
             <select name="key_decrypt" id="key_decrypt">
-                {% for clave in listado_claves_aes %}
+                {% for clave in listado_claves %}
                     <option value="{{ clave }}">{{ clave }}</option>
                 {% endfor %}
             </select>
@@ -72,14 +72,14 @@ C. Simétrico
         <form action="/csimetrico" method="post" enctype="multipart/form-data">
             <label for="documento">Fichero a desencriptar:</label>
             <select name="archivo" id="archivo2">
-                {% for archivo in listado_archivos_3des %}
+                {% for archivo in listado_archivos %}
                     <option value="{{ archivo }}">{{ archivo }}</option>
                 {% endfor %}
             </select>
             <br><br>
             <label for="key_decrypt">Clave:</label><br>
             <select name="key_decrypt" id="key_decrypt">
-                {% for clave in listado_claves_3des %}
+                {% for clave in listado_claves %}
                     <option value="{{ clave }}">{{ clave }}</option>
                 {% endfor %}
             </select>
