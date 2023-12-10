@@ -6,7 +6,6 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-
 # Replace the existing home function with the one below
 @app.route("/")
 def home():
@@ -135,11 +134,39 @@ def csimetrico():
         return render_template('csimetrico.html', listado_claves=listado_claves, listado_archivos_aes=listado_archivos_aes, contenido_aes=contenido_aes, listado_archivos_3des=listado_archivos_3des, contenido_3des=contenido_3des, decrypted_message_aes=decrypted_message_aes, decrypted_message_3des=decrypted_message_3des, mode_aes=mode_aes, mode_3des=mode_3des)
 
     return render_template("csimetrico.html")
-@app.route("/casimetrico/")
+@app.route("/casimetrico/", methods=['GET','POST'])
 def casimetrico():
-    return render_template("casimetrico.html")
+    result_message = None
+    public_key = None
+    encrypted_message = None
+    decrypted_message = None
 
+    rutaclaves_asimetrico = './clavesasimetrico'
 
+    listado_claves_asimetrico = []
+
+    if request.method == 'POST':
+        if 'generate_keys' in request.form:
+            f.generate_and_save_keys()
+            with open(os.path.join(f.rutaclaves_asimetrico, "public_key.txt"), "r") as public_key_file:
+                public_key = public_key_file.read()
+
+        elif 'encrypt' in request.form:
+            message = request.form['message']
+            with open(os.path.join(f.rutaclaves_asimetrico, "public_key.txt"), "r") as public_key_file:
+                public_key = public_key_file.read()
+
+            encrypted_message = f.encrypt(message, public_key)
+            result_message = f'Mensaje encriptado: {encrypted_message}'
+
+        elif 'decrypt' in request.form:
+            with open(os.path.join(f.rutaclaves_asimetrico, "private_key.txt"), "r") as private_key_file:
+                private_key = private_key_file.read()
+
+            encrypted_message = request.form['encrypted_message']
+            decrypted_message = f.decrypt(encrypted_message, private_key)
+            result_message = f'Mensaje desencriptado: {decrypted_message}'
+    return render_template("casimetrico.html", public_key=public_key, encrypted_message=encrypted_message, decrypted_message=decrypted_message, result_message=result_message, listado_claves_asimetrico=listado_claves_asimetrico, rutaclaves_asimetrico=rutaclaves_asimetrico)
 @app.route("/about/")
 def about():
     return render_template("about.html")
