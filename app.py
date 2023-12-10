@@ -14,13 +14,25 @@ def home():
 
 @app.route("/csimetrico/", methods=['GET','POST'])
 def csimetrico():
+    smb_connection = f.conectar_samba()
+    ruta = './archivos'
+    rutaclaves = './claves'
+    listado_samba = f.listar_samba(smb_connection)
+    listado_archivos_aes = f.listar(ruta)
+    listado_claves = f.listarclaves(rutaclaves)
+    listado_archivos_3des = f.listar(ruta)
+    archivo2_aes = request.form.get('archivo_aes')
+
     if request.method == 'POST':
         contenido_aes = ""
         contenido_3des = ""
+        ruta_completa_aes = ""
         # Obtiene una lista de archivos enviados con el formulario de AES
         archivos_aes = request.files.getlist('archivo_aes')
         # Obtiene una lista de archivos enviados con el formulario de 3DES
         archivos_3des = request.files.getlist('archivo_3des')
+        archivos_samba = request.files.getlist('archivo_samba')
+
         
         # Obtiene el archivo seleccionado en el desplegable del formulario de AES
         archivo2_aes = request.form.get('archivo_aes')
@@ -36,15 +48,10 @@ def csimetrico():
         mode_aes = request.form.get('mode_aes')
         mode_3des = request.form.get('mode_3des')
 
-        # Inicializa variables donde están los archivos
-        listado_archivos_aes = []
-        listado_archivos_3des = []
-        listado_claves = []
+        mode_samba = request.form.get('descargar_samba')
+        
 
-        # Determina el destino de los ficheros donde se guardarán los mensajes encriptados
-        ruta = './archivos'
-        rutaclaves = './claves'
-
+       
         if mode_aes == 'encrypt_aes':
             # Seleccionamos el primer fichero para AES
             docu_aes = archivos_aes[0]
@@ -66,7 +73,18 @@ def csimetrico():
             
             listado_archivos_aes = f.listar(ruta)
             listado_claves = f.listarclaves(rutaclaves)
-            return render_template('csimetrico.html', listado_claves=listado_claves, listado_archivos_aes=listado_archivos_aes, contenido_aes=contenido_aes, mode_aes=mode_aes)
+            listado_samba = f.listar_samba(smb_connection)
+
+            
+            return render_template('csimetrico.html', 
+                                   listado_samba=listado_samba, 
+                                   listado_claves=listado_claves, 
+                                   listado_archivos_aes=listado_archivos_aes, 
+                                   contenido_aes=contenido_aes, 
+                                   listado_archivos_3des=listado_archivos_3des, 
+                                   contenido_3des=contenido_3des, 
+                                   mode_aes=mode_aes, 
+                                   mode_3des=mode_3des)
 
         elif mode_3des == 'encrypt_3des':
             # Seleccionamos el primer fichero para 3DES
@@ -90,8 +108,17 @@ def csimetrico():
             # Listamos los ficheros contenidos en la ruta para 3DES
             listado_archivos_3des = f.listar(ruta)
             listado_claves = f.listarclaves(rutaclaves)
+            listado_samba = f.listar_samba(smb_connection)
 
-            return render_template('csimetrico.html', listado_claves=listado_claves, listado_archivos_3des=listado_archivos_3des, contenido_3des=contenido_3des, mode_3des=mode_3des)
+            return render_template('csimetrico.html', 
+                                   listado_samba=listado_samba, 
+                                   listado_claves=listado_claves, 
+                                   listado_archivos_aes=listado_archivos_aes, 
+                                   contenido_aes=contenido_aes, 
+                                   listado_archivos_3des=listado_archivos_3des, 
+                                   contenido_3des=contenido_3des, 
+                                   mode_aes=mode_aes, 
+                                   mode_3des=mode_3des)
 
         elif mode_aes == 'decrypt_aes':
             # Llamamos a la función listar para obtener un listado de los archivos en la variable ruta
@@ -113,7 +140,16 @@ def csimetrico():
             # Finalmente desencriptamos el contenido del fichero seleccionado con la clave y el fichero elegidos
             decrypted_message_aes = f.decrypt_message_AES(contenido2_aes, contenidoclave_aes)
             print("Listado de archivos AES:", listado_archivos_aes)
-            return render_template('csimetrico.html', listado_claves=listado_claves, listado_archivos_aes=listado_archivos_aes, contenido_aes=contenido_aes, decrypted_message_aes=decrypted_message_aes, mode_aes=mode_aes)
+            return render_template('csimetrico.html', 
+                                   listado_samba=listado_samba, 
+                                   listado_claves=listado_claves, 
+                                   listado_archivos_aes=listado_archivos_aes, 
+                                   contenido_aes=contenido_aes, 
+                                   listado_archivos_3des=listado_archivos_3des, 
+                                   contenido_3des=contenido_3des, 
+                                   decrypted_message_aes=decrypted_message_aes, 
+                                   mode_aes=mode_aes, 
+                                   mode_3des=mode_3des)
 
         elif mode_3des == 'decrypt_3des':
             # Llamamos a la función listar para obtener un listado de los archivos en la variable ruta
@@ -130,11 +166,76 @@ def csimetrico():
                 contenidoclave_3des = file2_3des.read()
             # Finalmente desencriptamos el contenido del fichero seleccionado con la clave y el fichero elegidos
             decrypted_message_3des = f.decrypt_message_3des(contenido2_3des, contenidoclave_3des)
-            return render_template('csimetrico.html', listado_claves=listado_claves, listado_archivos_3des=listado_archivos_3des, contenido_3des=contenido_3des, decrypted_message_3des=decrypted_message_3des, mode_3des=mode_3des)
 
-        return render_template('csimetrico.html', listado_claves=listado_claves, listado_archivos_aes=listado_archivos_aes, contenido_aes=contenido_aes, listado_archivos_3des=listado_archivos_3des, contenido_3des=contenido_3des, decrypted_message_aes=decrypted_message_aes, decrypted_message_3des=decrypted_message_3des, mode_aes=mode_aes, mode_3des=mode_3des)
+            return render_template('csimetrico.html', 
+                                   listado_samba=listado_samba, 
+                                   listado_claves=listado_claves, 
+                                   listado_archivos_aes=listado_archivos_aes, 
+                                   contenido_aes=contenido_aes, 
+                                   listado_archivos_3des=listado_archivos_3des, 
+                                   contenido_3des=contenido_3des, 
+                                   decrypted_message_3des=decrypted_message_3des,
+                                   mode_aes=mode_aes, 
+                                   mode_3des=mode_3des)
 
-    return render_template("csimetrico.html")
+        elif mode_aes == 'subir_samba':
+            
+            ruta_completa2_aes = os.path.join(rutaclaves, key_decrypt_aes)
+            ruta_completa_aes = os.path.join(ruta, archivo2_aes)
+            listado_archivos_aes = f.listar(ruta)
+            listado_claves = f.listarclaves(rutaclaves)
+            listado_archivos_3des = f.listar(ruta)
+            listado_samba = f.listar_samba(smb_connection)
+            listado_archivos_aes = f.listar(ruta)
+            f.cargar_samba(ruta_completa_aes,smb_connection)
+            f.cargar_samba(ruta_completa2_aes,smb_connection)
+            print("Listado actualizado in the night:", listado_samba)
+
+            return render_template('csimetrico.html', 
+                                   listado_samba=listado_samba, 
+                                   listado_claves=listado_claves, 
+                                   listado_archivos_aes=listado_archivos_aes, 
+                                   contenido_aes=contenido_aes, 
+                                   listado_archivos_3des=listado_archivos_3des, 
+                                   contenido_3des=contenido_3des,  
+                                   mode_aes=mode_aes,
+                                   mode_samba=mode_samba, 
+                                   mode_3des=mode_3des)
+        elif 'archivo_samba' in request.form and 'mode_samba' in request.form:
+        
+            listado_archivos_aes = f.listar(ruta)
+            listado_claves = f.listarclaves(rutaclaves)
+            listado_archivos_3des = f.listar(ruta)
+            listado_samba = f.listar_samba(smb_connection)
+
+            if request.form['mode_samba'] == 'descargar_samba':
+                # Obtiene el fichero seleccionado en el desplegable con su ruta completa
+                archivo_samba_seleccionado = request.form['archivo_samba']
+                clave_samba_seleccionado = request.form['clave_samba']
+                local_file_path = f.descargar_sambaclave(smb_connection, clave_samba_seleccionado)
+                # Llamamos a la función download_samba para descargar el archivo desde Samba
+                local_file_path = f.descargar_samba(smb_connection, archivo_samba_seleccionado)
+                listado_archivos_aes = f.listar(ruta)
+                listado_claves = f.listarclaves(rutaclaves)
+                listado_archivos_3des = f.listar(ruta)
+                listado_samba = f.listar_samba(smb_connection)
+
+        return render_template('csimetrico.html', 
+                           listado_samba=listado_samba, 
+                           listado_claves=listado_claves, 
+                           listado_archivos_aes=listado_archivos_aes, 
+                           contenido_aes=contenido_aes, 
+                           listado_archivos_3des=listado_archivos_3des, 
+                           contenido_3des=contenido_3des, 
+                           mode_aes=mode_aes, 
+                           mode_3des=mode_3des)
+
+    return render_template("csimetrico.html",
+                           listado_samba=listado_samba, 
+                           listado_claves=listado_claves, 
+                           listado_archivos_aes=listado_archivos_aes, 
+                           listado_archivos_3des=listado_archivos_3des
+                           )
 @app.route("/casimetrico/")
 def casimetrico():
     return render_template("casimetrico.html")
