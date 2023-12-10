@@ -6,7 +6,8 @@ C. Asimétrico
 <h2>Encriptar archivo</h2>
 
 <!-- Botón para generar claves -->
-<form action="/generate_keys" method="post">
+<form action="/casimetrico" method="post">
+    <input type="hidden" name="operation" value="generate_keys">
     <button type="submit">Generar claves</button>
 </form>
 
@@ -20,7 +21,8 @@ C. Asimétrico
 {% endif %}
 
 <!-- Botón para encriptar un archivo -->
-<form action="/encrypt_file" method="post" enctype="multipart/form-data">
+<form action="/casimetrico" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="operation" value="encrypt_file">
     <input type="file" name="file">
     <button type="submit">Encriptar archivo</button>
 </form>
@@ -34,7 +36,8 @@ C. Asimétrico
 <h2>Desencriptar archivo</h2>
 
 <!-- Formulario para seleccionar el archivo que se desencriptará y la clave pública -->
-<form action="/decrypt_file" method="post" enctype="multipart/form-data">
+<form action="/casimetrico" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="operation" value="decrypt_file">
     <!-- Desplegable para seleccionar la clave pública -->
     <select name="key">
         {% for key in keys %}
