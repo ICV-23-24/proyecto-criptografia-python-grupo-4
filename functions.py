@@ -1,6 +1,11 @@
 from Cryptodome.Cipher import AES,DES3
 from Cryptodome.Util.Padding import pad,unpad
 from base64 import b64encode, b64decode
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.backends import default_backend
 import os
 from os.path import isfile, join
 import string
@@ -81,7 +86,7 @@ def encrypt_message(contenido, clave, algoritmo):
     return b64encode(encrypted_message).decode('utf-8')
 
 # Función para desencriptar un mensaje usando AES o 3DES
-def decrypt_message(contenido, contenidoclave, algoritmo):
+def decrypt_message(contenido, contenidoclave, algoritmo, ruta_completa):
     if algoritmo == 'AES':
         if len(contenidoclave) != 16:
             raise ValueError("La clave para AES debe ser de 16 bytes")
@@ -94,4 +99,104 @@ def decrypt_message(contenido, contenidoclave, algoritmo):
         raise ValueError("Algoritmo de cifrado no válido")
 
     decrypted_message = unpad(cipher.decrypt(b64decode(contenido)), max(AES.block_size, DES3.block_size)).decode('utf-8')
+
+    # Sobrescribe el archivo original con el mensaje desencriptado
+    with open(ruta_completa, 'w') as file:
+        file.write(decrypted_message)
+
     return decrypted_message
+
+def generate_keys():
+    private_key = rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=2048,
+        backend=default_backend()
+    )
+    public_key = private_key.public_key()
+    return private_key, public_key
+
+def export_private_key(private_key):
+    return private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+
+def export_public_key(public_key):
+    return public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+
+def import_public_key(public_key_bytes):
+    return serialization.load_pem_public_key(public_key_bytes, backend=default_backend())
+
+def encrypt_message(public_key, message):
+    encrypted_message = public_key.encrypt(
+        message,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    return encrypted_message
+
+def decrypt_message(private_key, encrypted_message):
+    original_message = private_key.decrypt(
+        encrypted_message,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    return original_message
+
+def import_private_key(private_key_bytes):
+    return serialization.load_pem_private_key(
+        private_key_bytes,
+        password=None,
+        backend=default_backend()
+    )
+
+def import_public_key(public_key_pem):
+    public_key = serialization.load_pem_public_key(
+        public_key_pem,
+        backend=default_backend()
+    )
+    return public_key
+
+def encrypt_file(public_key, file):
+    # Lee el contenido del archivo
+    file_content = file.read()
+    # Encripta el contenido del archivo
+    encrypted_file_content = public_key.encrypt(
+        file_content,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    return encrypted_file_content
+
+def import_private_key(private_key_pem):
+    private_key = serialization.load_pem_private_key(
+        private_key_pem,
+        password=None,
+        backend=default_backend()
+    )
+    return private_key
+
+def decrypt_file(private_key, encrypted_file):
+    encrypted_data = encrypted_file.read()
+    decrypted_data = private_key.decrypt(
+        encrypted_data,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    return decrypted_data
