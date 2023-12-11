@@ -69,6 +69,8 @@ def csimetrico():
 
 @app.route('/casimetrico', methods=['GET', 'POST'])
 def casimetrico():
+    encrypted_file_name = None
+    decrypted_file_name = None
     if request.method == 'POST':
         operation = request.form.get('operation')
         if operation == 'generate_keys':
@@ -77,8 +79,6 @@ def casimetrico():
                 private_key_file.write(f.export_private_key(private_key))
             with open(os.path.join('claves', 'public_key.pem'), 'wb') as public_key_file:
                 public_key_file.write(f.export_public_key(public_key))
-            keys = os.listdir('claves')
-            return render_template("casimetrico.html", keys=keys)
         elif operation == 'import_key':
             public_key_file = request.files["public_key"]
             public_key = f.import_public_key(public_key_file.read())
@@ -111,26 +111,26 @@ def casimetrico():
             with open(os.path.join('claves', 'public_key.pem'), 'rb') as public_key_file:
                 public_key = f.import_public_key(public_key_file.read())
             encrypted_file = f.encrypt_file(public_key, file)
+            encrypted_file_name = file.filename
             with open(os.path.join('archivos', file.filename), 'wb') as encrypted_file_file:
                 encrypted_file_file.write(encrypted_file)
-            return redirect(url_for('casimetrico'))
         elif operation == 'decrypt_file':
-            if 'file' not in request.files:
-                return "No se subió ningún archivo", 400
-            file = request.files['file']
+            if 'file' not in request.form:
+                return "No se seleccionó ningún archivo", 400
+            file_name = request.form['file']
             if 'key' not in request.form:
                 return "No se seleccionó ninguna clave", 400
             key_name = request.form['key']
             with open(os.path.join('claves', key_name), 'rb') as private_key_file:
                 private_key = f.import_private_key(private_key_file.read())
-            decrypted_file = f.decrypt_file(private_key, file)
-            with open(os.path.join('archivos', 'decrypted_' + file.filename), 'wb') as decrypted_file_file:
+            with open(os.path.join('archivos', file_name), 'rb') as file:
+                decrypted_file = f.decrypt_file(private_key, file)
+            decrypted_file_name = 'decrypted_' + file_name
+            with open(os.path.join('archivos', decrypted_file_name), 'wb') as decrypted_file_file:
                 decrypted_file_file.write(decrypted_file)
-            return redirect(url_for('casimetrico'))
-    else:
-        keys = os.listdir('claves')
-        files = os.listdir('archivos')
-        return render_template("casimetrico.html", keys=keys, files=files)
+    keys = os.listdir('claves')
+    files = os.listdir('archivos')
+    return render_template("casimetrico.html", keys=keys, files=files, decrypted_file_name=decrypted_file_name, encrypted_file_name=encrypted_file_name)
 
 @app.route("/about/")
 def about():
