@@ -1,3 +1,7 @@
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-" crossorigin="anonymous" />
+</head>
+<body>
 {% extends "layout.html" %}
 {% block title %}
 C. Simétrico
@@ -5,19 +9,19 @@ C. Simétrico
 {% block content %}
 <div style="display: flex; justify-content: space-between;">
 
-    <div style="width: 48%; display: flex; justify-content: space-between;">
-        <div style="width: 48%;">
+    <div style="display: flex; justify-content: space-between;">
+        <div style="width: 35%;">
             <h1>Encriptado local con AES</h1>
 
             <h2>Encriptar Mensaje con AES</h2>
             <form action="/csimetrico" method="post" enctype="multipart/form-data">
-                <input type="file" name="archivo_aes"><br><br>
+                <input type="file" name="archivo_aes" id="seleccion"><br><br>
                 <label for="archivo_nombre_aes">Nombre del Archivo:</label>
                 <input type="text" id="archivo_nombre_aes" name="archivo_nombre_aes" required><br><br>
                 <label for="key_aes">Clave AES:</label>
                 <input type="text" id="key_aes" name="key_aes"><br><br>
                 <input type="hidden" name="mode_aes" value="encrypt_aes">
-                <input type="submit" value="Encriptar con AES"><br><br>
+                <input type="submit" value="Encriptar con AES" id="boton"><br><br>
             </form>     
 
              
@@ -45,7 +49,7 @@ C. Simétrico
                 </select>
                 <br><br>
                 <input type="hidden" name="mode_aes" value="decrypt_aes">
-                <input type="submit" value="Desencriptar con AES">
+                <input type="submit" value="Desencriptar con AES" id="boton">
                 <br><br>
             </form>
 
@@ -56,10 +60,10 @@ C. Simétrico
                 <p>{{ decrypted_message_aes }}</p>
             {% endif %}
         </div>
-        <div style="width: 48%;">
+        <div style="width: 35%;">
             <h1>Gestión de archivos con Samba</h1>
 
-            <h1>Subir Archivo a Samba</h1>
+            <h2>Subir Archivo a Samba</h2>
             <form action="/csimetrico" method="post" enctype="multipart/form-data">
                 <label for="archivo_aes">Fichero a subir:</label>
                 <select name="archivo_aes" id="archivo2_aes">
@@ -75,14 +79,14 @@ C. Simétrico
                     {% endfor %}
                 </select>
                 <br><br>
-                <button type="submit">Subir a Samba</button>
+                <button type="submit" id="subida">Subir a Samba <i class="fa-solid fa-cloud-arrow-up"></i></button>
                 <input type="hidden" name="mode_aes" value="subir_samba">
             </form>
 
     <!-- Corrección: Eliminar etiqueta de cierre innecesaria -->
     <!-- <form action="/csimetrico" method="post" enctype="multipart/form-data"></form> -->
 
-            <h1>Descargar Archivo desde Samba</h1>
+            <h2>Descargar Archivo desde Samba</h2>
             <form action="/csimetrico" method="post" enctype="multipart/form-data">
                 <label for="archivo_samba">Seleccionar archivo en Samba:</label>
                 <select name="archivo_samba" id="archivo_samba">
@@ -97,23 +101,23 @@ C. Simétrico
                     {% endfor %}
                 </select>
                 <input type="hidden" name="mode_samba" value="descargar_samba"><br><br>
-                <button type="submit">Descargar desde Samba</button>
+                <button type="submit" id="descargas">Descargar desde Samba <i class="fa-solid fa-cloud-arrow-down"></i></button>
             </form> 
         </div>
-    </div>
 
-    <div style="width: 48%;">
+
+    <div style="width: 35%;">
         <h1>Encriptar y desencriptar mensaje con 3DES</h1>
 
         <h2>Encriptar Mensaje con 3DES</h2>
         <form action="/csimetrico" method="post" enctype="multipart/form-data">
-            <input type="file" name="archivo_3des"><br><br>
+            <input type="file" name="archivo_3des" id="seleccion"><br><br>
             <label for="archivo_nombre_3des">Nombre del Archivo:</label>
             <input type="text" id="archivo_nombre_3des" name="archivo_nombre_3des" required><br><br>
             <label for="key_3des">Clave 3DES:</label>
             <input type="text" id="key_3des" name="key_3des"><br><br>
             <input type="hidden" name="mode_3des" value="encrypt_3des">
-            <input type="submit" value="Encriptar con 3DES">
+            <input type="submit" value="Encriptar con 3DES" id="boton">
         </form>
         
         {% if encrypted_message_3des %}
@@ -140,7 +144,7 @@ C. Simétrico
             </select>
             <br><br>
             <input type="hidden" name="mode_3des" value="decrypt_3des">
-            <input type="submit" value="Desencriptar con 3DES">
+            <input type="submit" value="Desencriptar con 3DES" id="boton">
             <br><br>
         </form>
 
@@ -152,4 +156,6 @@ C. Simétrico
         {% endif %}
     </div>
 </div>
+</div>
 {% endblock %}
+</body>

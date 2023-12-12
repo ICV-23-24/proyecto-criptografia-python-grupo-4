@@ -24,7 +24,7 @@ C. Asimétrico
 <form action="/casimetrico" method="post" enctype="multipart/form-data">
     <input type="hidden" name="operation" value="encrypt_file">
     <input type="file" name="file">
-    <button type="submit">Encriptar archivo</button>
+    <button type="submit" id="boton">Encriptar archivo</button>
 </form>
 
 {% if encrypted_file_name %}
@@ -48,7 +48,7 @@ C. Asimétrico
             <option value="{{ file }}">{{ file }}</option>
         {% endfor %}
     </select>
-    <button type="submit">Desencriptar archivo</button>
+    <button type="submit" id="boton">Desencriptar archivo</button>
 </form>
 
 <!-- Desplegable para mostrar el nombre del archivo que se desencriptó -->
