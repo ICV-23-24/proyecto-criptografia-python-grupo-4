@@ -3,36 +3,58 @@
 C. Asimétrico
 {% endblock %}
 {% block content %}
-<h1>Encriptar y desencriptar archivos con RSA</h1>
+<h2>Encriptar archivo</h2>
 
-    <h2>Encriptar Mensaje</h2>
-    <form method="post">
-        <label for="message">Mensaje:</label><br>
-        <input type="text" id="message" name="message"><br><br>
-        <!-- <label for="key">Clave:</label><br>
-        <input type="text" id="key" name="key"><br><br> -->
-        <input type="hidden" name="mode" value="encrypt">
-        <input type="submit" value="Encriptado">
-    </form>
+<!-- Botón para generar claves -->
+<form action="/casimetrico" method="post">
+    <input type="hidden" name="operation" value="generate_keys">
+    <button type="submit">Generar claves</button>
+</form>
 
-    {% if encrypted_message %}
-        <h2>Mensaje Encriptado:</h2>
-        <p>{{ encrypted_message }}</p>
-    {% endif %}
+<!-- Desplegable para seleccionar una clave -->
+{% if keys %}
+    <select name="key">
+    {% for key in keys %}
+        <option value="{{ key }}">{{ key }}</option>
+    {% endfor %}
+    </select>
+{% endif %}
 
-    <h2>Desencriptar Mensaje</h2>
-    <form method="post">
-        <label for="encrypted_message">Mensaje Encriptado:</label><br>
-        <input type="text" id="encrypted_message" name="message"><br><br>
-        <!-- <label for="key_decrypt">Clave:</label><br>
-        <input type="text" id="key_decrypt" name="key"><br><br> -->
-        <input type="hidden" name="mode" value="decrypt">
-        <input type="submit" value="Desencriptado">
-    </form>
+<!-- Botón para encriptar un archivo -->
+<form action="/casimetrico" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="operation" value="encrypt_file">
+    <input type="file" name="file">
+    <button type="submit">Encriptar archivo</button>
+</form>
 
-    {% if decrypted_message %}
-        <h2>Mensaje:</h2>
-        <p>{{ decrypted_message }}</p>
-    {% endif %}
+{% if encrypted_file_name %}
+    <p>Nombre del archivo encriptado: {{ encrypted_file_name }}</p>
+{% endif %}
+
+<h2>Desencriptar archivo</h2>
+
+<!-- Formulario para seleccionar el archivo que se desencriptará y la clave pública -->
+<form action="/casimetrico" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="operation" value="decrypt_file">
+    <!-- Desplegable para seleccionar la clave pública -->
+    <select name="key">
+        {% for key in keys %}
+            <option value="{{ key }}">{{ key }}</option>
+        {% endfor %}
+    </select>
+    <!-- Desplegable para seleccionar el archivo que se desencriptará -->
+    <select name="file">
+        {% for file in files %}
+            <option value="{{ file }}">{{ file }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Desencriptar archivo</button>
+</form>
+
+<!-- Desplegable para mostrar el nombre del archivo que se desencriptó -->
+{% if decrypted_file_name %}
+    <p>Archivo desencriptado: {{ decrypted_file_name }}</p>
+{% endif %}
+
 {% endblock %}
 

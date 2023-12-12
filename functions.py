@@ -6,6 +6,11 @@ from os.path import isfile, join
 import string
 import random
 from smb.SMBConnection import SMBConnection
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.backends import default_backend
 
 
 def encrypt_message_AES(contenido, clave):
@@ -52,7 +57,7 @@ def generar_cadena(longitud=16):
 def conectar_samba():
     try:
         # Configura tus credenciales y detalles del servidor Samba aquí
-        SMB_HOST = '192.168.1.142'
+        SMB_HOST = '192.168.8.142'
         SMB_PORT = 139
         SMB_USERNAME = 'pedro'
         SMB_PASSWORD = 'pedro'
@@ -108,32 +113,6 @@ def listar_samba(smb_connection):
     except Exception as e:
         print(f"Error al listar archivos en Samba: {e}")
         return []
-
-def descargar_samba(smb_connection, ruta_completa_aes, ruta):
-    try:
-        # Configura tus credenciales y detalles del servidor Samba aquí
-        SMB_SHARE_FOLDER = 'python'
-        SMB_PATH = '/'
-
-        # Extraer el nombre del archivo de la ruta en Samba
-        nombre_archivo_samba = os.path.basename(ruta_completa_aes)
-
-        # Establecer la conexión Samba
-        with smb_connection:
-            print(ruta_completa_aes)
-            with smb_connection.openFile(SMB_SHARE_FOLDER, f"{SMB_PATH}/{ruta_completa_aes}", "rb") as file:
-                contenido = file.read()
-
-                # Construir la ruta local especificada
-                ruta_local_completa = os.path.join(ruta, nombre_archivo_samba)
-                print(ruta_local_completa)
-                with open(ruta_local_completa, 'wb') as local_file:
-                    local_file.write(contenido)
-
-                return ruta_local_completa
-    except Exception as e:
-        print(f"Error al descargar archivo desde Samba: {e}")
-        return None
     
 def descargar_samba(smb_connection,archivo_samba_seleccionado):
     try:
@@ -164,4 +143,100 @@ def descargar_sambaclave(smb_connection,clave_samba_seleccionado):
     except Exception as e:
         print(f"Error al descargar el archivo desde Samba: {e}")
         return None
+    
+
+def generate_keys():
+    private_key = rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=2048,
+        backend=default_backend()
+    )
+    public_key = private_key.public_key()
+    return private_key, public_key
+
+def export_private_key(private_key):
+    return private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+
+def export_public_key(public_key):
+    return public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+
+def import_public_key(public_key_bytes):
+    return serialization.load_pem_public_key(public_key_bytes, backend=default_backend())
+
+def encrypt_message(public_key, message):
+    encrypted_message = public_key.encrypt(
+        message,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    return encrypted_message
+
+def decrypt_message(private_key, encrypted_message):
+    original_message = private_key.decrypt(
+        encrypted_message,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    return original_message
+
+def import_private_key(private_key_bytes):
+    return serialization.load_pem_private_key(
+        private_key_bytes,
+        password=None,
+        backend=default_backend()
+    )
+
+def import_public_key(public_key_pem):
+    public_key = serialization.load_pem_public_key(
+        public_key_pem,
+        backend=default_backend()
+    )
+    return public_key
+
+def encrypt_file(public_key, file):
+    # Lee el contenido del archivo
+    file_content = file.read()
+    # Encripta el contenido del archivo
+    encrypted_file_content = public_key.encrypt(
+        file_content,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    return encrypted_file_content
+
+def import_private_key(private_key_pem):
+    private_key = serialization.load_pem_private_key(
+        private_key_pem,
+        password=None,
+        backend=default_backend()
+    )
+    return private_key
+
+def decrypt_file(private_key, encrypted_file):
+    encrypted_data = encrypted_file.read()
+    decrypted_data = private_key.decrypt(
+        encrypted_data,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+    return decrypted_data    
 
