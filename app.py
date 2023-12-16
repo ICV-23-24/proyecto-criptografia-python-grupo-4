@@ -22,6 +22,7 @@ def csimetrico():
     listado_archivos_aes = f.listar(ruta)
     listado_claves = f.listarclaves(rutaclaves)
     listado_archivos_3des = f.listar(ruta)
+    listado_claves_samba = f.listar_claves_samba(smb_connection)
     archivo2_aes = request.form.get('archivo_aes')
 
     if request.method == 'POST':
@@ -68,11 +69,13 @@ def csimetrico():
             listado_archivos_aes = f.listar(ruta)
             listado_claves = f.listarclaves(rutaclaves)
             listado_samba = f.listar_samba(smb_connection)
+            listado_claves_samba = f.listar_claves_samba(smb_connection)
             
             return render_template('csimetrico.html', 
                                    listado_samba=listado_samba, 
                                    listado_claves=listado_claves, 
-                                   listado_archivos_aes=listado_archivos_aes, 
+                                   listado_archivos_aes=listado_archivos_aes,
+                                   listado_claves_samba=listado_claves_samba, 
                                    contenido_aes=contenido_aes, 
                                    listado_archivos_3des=listado_archivos_3des, 
                                    contenido_3des=contenido_3des, 
@@ -102,9 +105,10 @@ def csimetrico():
             listado_archivos_3des = f.listar(ruta)
             listado_claves = f.listarclaves(rutaclaves)
             listado_samba = f.listar_samba(smb_connection)
-
+            listado_archivos_aes = f.listar(ruta)
             return render_template('csimetrico.html', 
-                                   listado_samba=listado_samba, 
+                                   listado_samba=listado_samba,
+                                   listado_claves_samba=listado_claves_samba, 
                                    listado_claves=listado_claves, 
                                    listado_archivos_aes=listado_archivos_aes, 
                                    contenido_aes=contenido_aes, 
@@ -135,6 +139,7 @@ def csimetrico():
             print("Listado de archivos AES:", listado_archivos_aes)
             return render_template('csimetrico.html', 
                                    listado_samba=listado_samba, 
+                                   listado_claves_samba=listado_claves_samba,
                                    listado_claves=listado_claves, 
                                    listado_archivos_aes=listado_archivos_aes, 
                                    contenido_aes=contenido_aes, 
@@ -161,7 +166,8 @@ def csimetrico():
             decrypted_message_3des = f.decrypt_message_3des(contenido2_3des, contenidoclave_3des)
 
             return render_template('csimetrico.html', 
-                                   listado_samba=listado_samba, 
+                                   listado_samba=listado_samba,
+                                   listado_claves_samba=listado_claves_samba, 
                                    listado_claves=listado_claves, 
                                    listado_archivos_aes=listado_archivos_aes, 
                                    contenido_aes=contenido_aes, 
@@ -175,17 +181,19 @@ def csimetrico():
             
             ruta_completa2_aes = os.path.join(rutaclaves, key_decrypt_aes)
             ruta_completa_aes = os.path.join(ruta, archivo2_aes)
+            f.cargar_samba(ruta_completa_aes,smb_connection)
+            f.cargar_claves_samba(ruta_completa2_aes,smb_connection)
             listado_archivos_aes = f.listar(ruta)
             listado_claves = f.listarclaves(rutaclaves)
             listado_archivos_3des = f.listar(ruta)
             listado_samba = f.listar_samba(smb_connection)
             listado_archivos_aes = f.listar(ruta)
-            f.cargar_samba(ruta_completa_aes,smb_connection)
-            f.cargar_samba(ruta_completa2_aes,smb_connection)
+            listado_claves_samba = f.listar_claves_samba(smb_connection)
             print("Listado actualizado in the night:", listado_samba)
 
             return render_template('csimetrico.html', 
                                    listado_samba=listado_samba, 
+                                   listado_claves_samba=listado_claves_samba,
                                    listado_claves=listado_claves, 
                                    listado_archivos_aes=listado_archivos_aes, 
                                    contenido_aes=contenido_aes, 
@@ -217,6 +225,7 @@ def csimetrico():
                            listado_samba=listado_samba, 
                            listado_claves=listado_claves, 
                            listado_archivos_aes=listado_archivos_aes, 
+                           listado_claves_samba=listado_claves_samba,
                            contenido_aes=contenido_aes, 
                            listado_archivos_3des=listado_archivos_3des, 
                            contenido_3des=contenido_3des, 
@@ -227,7 +236,8 @@ def csimetrico():
                            listado_samba=listado_samba, 
                            listado_claves=listado_claves, 
                            listado_archivos_aes=listado_archivos_aes, 
-                           listado_archivos_3des=listado_archivos_3des
+                           listado_archivos_3des=listado_archivos_3des,
+                           listado_claves_samba=listado_claves_samba
                            )
 @app.route("/casimetrico", methods=['GET', 'POST'])
 def casimetrico():

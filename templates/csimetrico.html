@@ -96,7 +96,7 @@ C. Simétrico
                 </select><br><br>
                 <label for="clave_samba">Clave AES:</label>
                 <select name="clave_samba" id="clave_samba">
-                    {% for archivo_samba in listado_samba %}
+                    {% for archivo_samba in listado_claves_samba %}
                         <option value="{{ archivo_samba }}">{{ archivo_samba }}</option>
                     {% endfor %}
                 </select>

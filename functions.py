@@ -57,7 +57,7 @@ def generar_cadena(longitud=16):
 def conectar_samba():
     try:
         # Configura tus credenciales y detalles del servidor Samba aquí
-        SMB_HOST = '192.168.8.142'
+        SMB_HOST = '192.168.1.142'
         SMB_PORT = 139
         SMB_USERNAME = 'pedro'
         SMB_PASSWORD = 'pedro'
@@ -97,10 +97,50 @@ def cargar_samba(ruta_completa_aes, smb_connection):
             print(f"Error al cargar a Samba: {e}")
         return False
 
+def cargar_claves_samba(ruta_completa_aes, smb_connection):
+        try:
+            # Configura tus credenciales y detalles del servidor Samba aquí
+            SMB_SHARE_FOLDER = 'claves'
+
+            # Obtén la ruta completa del archivo seleccionado
+            ruta_local = os.path.join(ruta_completa_aes)
+
+            if not os.path.exists(ruta_local):
+                raise FileNotFoundError(f"El archivo local no existe: {ruta_local}")
+
+                # Abre el archivo en modo binario ('rb')
+            with open(ruta_local, 'rb') as file_content:
+                # Almacena el archivo en Samba
+                smb_connection.storeFile(SMB_SHARE_FOLDER, os.path.basename(ruta_local), file_content)
+
+            # Cierra la conexión Samba después de realizar la operación
+
+            return True  # Éxito
+        except Exception as e:
+            print(f"Error al cargar a Samba: {e}")
+        return False
+
 def listar_samba(smb_connection):
     try:
         # Configura tus credenciales y detalles del servidor Samba aquí
         SMB_SHARE_FOLDER = 'python'
+        SMB_PATH = '/'
+
+        # Lista los archivos en el directorio remoto
+        files = smb_connection.listPath(SMB_SHARE_FOLDER, SMB_PATH)
+
+        # Imprime los nombres de los archivos
+        archivos_remotos = [file.filename for file in files]
+        # print(archivos_remotos)
+        return archivos_remotos
+    except Exception as e:
+        print(f"Error al listar archivos en Samba: {e}")
+        return []
+    
+def listar_claves_samba(smb_connection):
+    try:
+        # Configura tus credenciales y detalles del servidor Samba aquí
+        SMB_SHARE_FOLDER = 'claves'
         SMB_PATH = '/'
 
         # Lista los archivos en el directorio remoto
@@ -136,7 +176,7 @@ def descargar_sambaclave(smb_connection,clave_samba_seleccionado):
         local_file_path = os.path.join(ruta_local, clave_samba_seleccionado)
         
         with open(local_file_path, 'wb') as des:
-            smb_connection.retrieveFile("python", clave_samba_seleccionado, des)
+            smb_connection.retrieveFile("claves", clave_samba_seleccionado, des)
 
         return local_file_path
 

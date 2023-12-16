@@ -8,7 +8,7 @@ C. Asimétrico
 <!-- Botón para generar claves -->
 <form action="/casimetrico" method="post">
     <input type="hidden" name="operation" value="generate_keys">
-    <button type="submit">Generar claves</button>
+    <button type="submit">Generar claves</button><br><br>
 </form>
 
 <!-- Desplegable para seleccionar una clave -->
@@ -17,7 +17,7 @@ C. Asimétrico
     {% for key in keys %}
         <option value="{{ key }}">{{ key }}</option>
     {% endfor %}
-    </select>
+    </select><br><br>
 {% endif %}
 
 <!-- Botón para encriptar un archivo -->
@@ -51,7 +51,7 @@ C. Asimétrico
     <button type="submit" id="boton">Desencriptar archivo</button>
 </form>
 
-<!-- Desplegable para mostrar el nombre del archivo que se desencriptó -->
+<!-- Desplegable para mostrar el nombre del archivo que se desencripta -->
 {% if decrypted_file_name %}
     <p>Archivo desencriptado: {{ decrypted_file_name }}</p>
 {% endif %}
