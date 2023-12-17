@@ -1,6 +1,7 @@
+import base64
 from datetime import datetime
 import os
-from flask import Flask, render_template, request
+from flask import Flask, jsonify, make_response, render_template, request, redirect, url_for
 import functions as f
 from werkzeug.utils import secure_filename
 
@@ -12,73 +13,340 @@ app = Flask(__name__)
 def home():
     return render_template("home.html")
 
-@app.route("/csimetrico/", methods=['GET','POST'])
+@app.route("/csimetrico", methods=['GET','POST'])
 def csimetrico():
-    if request.method == 'POST':
-        # Obtiene una lista de archivos enviados con el formulario
-        archivos = request.files.getlist('archivo')
-        # Obtiene el archivo seleccionado en el desplegable
-        archivo2 = request.form.get('archivo')
-        key_decrypt = request.form.get('key_decrypt')
-        key = request.form.get('key')
-        mode = request.form['mode']
-        # Inicializa una variable donde están los archivos
-        listado_archivos = []
-        listado_claves = []
-        # Determina el destino de los ficheros donde se guardarán los mensajes encriptados
-        ruta = './archivos'
-        rutaclaves = './claves'
+    smb_connection = f.conectar_samba()
+    ruta = './archivos'
+    rutaclaves = './claves'
+    listado_samba = f.listar_samba(smb_connection)
+    listado_archivos_aes = f.listar(ruta)
+    listado_claves = f.listarclaves(rutaclaves)
+    listado_archivos_3des = f.listar(ruta)
+    listado_claves_samba = f.listar_claves_samba(smb_connection)
+    archivo2_aes = request.form.get('archivo_aes')
 
-        if mode == 'encrypt':
-            # Seleccionamos el primer fichero
-            docu = archivos[0]
-            # Lee el contenido y lo guardo en una variable
-            contenido = docu.read().decode('utf-8')
+    if request.method == 'POST':
+        contenido_aes = ""
+        contenido_3des = ""
+        ruta_completa_aes = ""
+        # Obtiene una lista de archivos enviados con el formulario de AES
+        archivos_aes = request.files.getlist('archivo_aes')
+        # Obtiene una lista de archivos enviados con el formulario de 3DES
+        archivos_3des = request.files.getlist('archivo_3des')
+        # Obtiene el archivo seleccionado en el desplegable del formulario de AES
+        archivo2_aes = request.form.get('archivo_aes')
+        # Obtiene el archivo seleccionado en el desplegable del formulario de 3DES
+        archivo2_3des = request.form.get('archivo_3des')
+        key_decrypt_aes = request.form.get('key_decrypt_aes')
+        key_decrypt_3des = request.form.get('key_decrypt_3des')
+        key_aes = request.form.get('key_aes')
+        key_3des = request.form.get('key_3des')
+        mode_aes = request.form.get('mode_aes')
+        mode_3des = request.form.get('mode_3des')
+        mode_samba = request.form.get('descargar_samba')
+        
+
+       
+        if mode_aes == 'encrypt_aes':
+            # Seleccionamos el primer fichero para AES
+            docu_aes = archivos_aes[0]
+            # Lee el contenido y lo guarda en una variable
+            contenido_aes = docu_aes.read().decode('utf-8')
             # Recoge el nombre del fichero del formulario
-            nuevo_nombre = request.form['archivo_nombre']
+            nuevo_nombre_aes = request.form['archivo_nombre_aes']
             # Añade una extensión a tu elección, por ejemplo ".txt"
-            filename = secure_filename(nuevo_nombre + "_encriptado.txt")
-            clave = f.generar_cadena()
-            nombre_archivo = secure_filename(key + "_clave.txt")
-            with open(os.path.join(rutaclaves, nombre_archivo), "w") as file2:
-                file2.write(clave)
-            # Crea una variable donde uso el contenido y la llave para encriptar el texto de la variable contenido
-            encrypted_message = f.encrypt_message(contenido, clave)
+            filename_aes = secure_filename(nuevo_nombre_aes + "_encriptadoAES.txt")
+            clave_aes = f.generar_cadena()
+            nombre_archivo_aes = secure_filename(key_aes + "_clave_AES.txt")
+
+            with open(os.path.join(rutaclaves, nombre_archivo_aes), "w") as file_aes:
+                file_aes.write(clave_aes)
+
             # Abre el archivo para escritura
-            with open(os.path.join(ruta, filename), "w") as file:
-                # Escribe el mensaje encriptado en el archivo
-                file.write(encrypted_message)
-            # Listamos los ficheros contenido en la ruta
-            listado_archivos = f.listar(ruta)
+            with open(os.path.join(ruta, filename_aes), "w") as file_aes:
+                file_aes.write(f.encrypt_message_AES(contenido_aes, clave_aes))
+            
+            listado_archivos_aes = f.listar(ruta)
             listado_claves = f.listarclaves(rutaclaves)
-            return render_template('csimetrico.html',listado_claves=listado_claves, listado_archivos=listado_archivos,encrypted_message=encrypted_message,contenido=contenido, mode=mode)
-        elif mode == 'decrypt':
-            # Llamos a la función listar para obtener un listado de los archivos en la variable ruta
-            listado_archivos = f.listar(ruta)
+            listado_samba = f.listar_samba(smb_connection)
+            listado_claves_samba = f.listar_claves_samba(smb_connection)
+            
+            return render_template('csimetrico.html', 
+                                   listado_samba=listado_samba, 
+                                   listado_claves=listado_claves, 
+                                   listado_archivos_aes=listado_archivos_aes,
+                                   listado_claves_samba=listado_claves_samba, 
+                                   contenido_aes=contenido_aes, 
+                                   listado_archivos_3des=listado_archivos_3des, 
+                                   contenido_3des=contenido_3des, 
+                                   mode_aes=mode_aes, 
+                                   mode_3des=mode_3des)
+
+        elif mode_3des == 'encrypt_3des':
+            # Seleccionamos el primer fichero para 3DES
+            docu_3des = archivos_3des[0]
+            # Lee el contenido y lo guarda en una variable
+            contenido_3des = docu_3des.read().decode('utf-8')
+            # Recoge el nombre del fichero del formulario
+            nuevo_nombre_3des = request.form['archivo_nombre_3des']
+            # Añade una extensión a tu elección, por ejemplo ".txt"
+            filename_3des = secure_filename(nuevo_nombre_3des + "_encriptado_3des.txt")
+            clave_3des = f.generar_cadena()
+            nombre_archivo_3des = secure_filename(key_3des + "_clave_3des.txt")
+
+            with open(os.path.join(rutaclaves, nombre_archivo_3des), "w") as file_3des:
+                file_3des.write(clave_3des)
+
+            # Abre el archivo para escritura
+            with open(os.path.join(ruta, filename_3des), "w") as file_3des:
+                file_3des.write(f.encrypt_message_3DES(contenido_3des, clave_3des))
+
+            # Listamos los ficheros contenidos en la ruta para 3DES
+            listado_archivos_3des = f.listar(ruta)
+            listado_claves = f.listarclaves(rutaclaves)
+            listado_samba = f.listar_samba(smb_connection)
+            listado_archivos_aes = f.listar(ruta)
+            return render_template('csimetrico.html', 
+                                   listado_samba=listado_samba,
+                                   listado_claves_samba=listado_claves_samba, 
+                                   listado_claves=listado_claves, 
+                                   listado_archivos_aes=listado_archivos_aes, 
+                                   contenido_aes=contenido_aes, 
+                                   listado_archivos_3des=listado_archivos_3des, 
+                                   contenido_3des=contenido_3des, 
+                                   mode_aes=mode_aes, 
+                                   mode_3des=mode_3des)
+
+        elif mode_aes == 'decrypt_aes':
+            # Llamamos a la función listar para obtener un listado de los archivos en la variable ruta
+            listado_archivos_aes = f.listar(ruta)
             # Obtiene el fichero seleccionado en el desplegable con su ruta completa
-            ruta_completa = os.path.join(ruta, archivo2)
+            ruta_completa_aes = os.path.join(ruta, archivo2_aes)
             # Obtiene el contenido del fichero que seleccionamos en el desplegable
-            with open(ruta_completa, 'r') as file:
-                contenido2 = file.read()
+            with open(ruta_completa_aes, 'r') as file_aes:
+                contenido2_aes = file_aes.read()
             # Ruta de destino para las claves
             rutaclaves = './claves'
             # Listamos el directorio con las claves
             listado_claves = f.listarclaves(rutaclaves)
             # Ruta con el fichero de la clave del desplegable
-            ruta_completa2 = os.path.join(rutaclaves, key_decrypt)
+            ruta_completa2_aes = os.path.join(rutaclaves, key_decrypt_aes)
             # Abrimos el fichero con la clave y leemos su contenido
-            with open(ruta_completa2, 'r') as file2:
-                contenidoclave = file2.read()
+            with open(ruta_completa2_aes, 'r') as file2_aes:
+                contenidoclave_aes = file2_aes.read()
             # Finalmente desencriptamos el contenido del fichero seleccionado con la clave y el fichero elegidos
-            decrypted_message = f.decrypt_message(contenido2, contenidoclave)
-            return render_template('csimetrico.html', listado_claves=listado_claves, listado_archivos=listado_archivos,contenido2=contenido2,decrypted_message=decrypted_message, mode=mode)
+            decrypted_message_aes = f.decrypt_message_AES(contenido2_aes, contenidoclave_aes)
+            print("Listado de archivos AES:", listado_archivos_aes)
+            return render_template('csimetrico.html', 
+                                   listado_samba=listado_samba, 
+                                   listado_claves_samba=listado_claves_samba,
+                                   listado_claves=listado_claves, 
+                                   listado_archivos_aes=listado_archivos_aes, 
+                                   contenido_aes=contenido_aes, 
+                                   listado_archivos_3des=listado_archivos_3des, 
+                                   contenido_3des=contenido_3des, 
+                                   decrypted_message_aes=decrypted_message_aes, 
+                                   mode_aes=mode_aes, 
+                                   mode_3des=mode_3des)
 
-    return render_template("csimetrico.html")
+        elif mode_3des == 'decrypt_3des':
+            # Llamamos a la función listar para obtener un listado de los archivos en la variable ruta
+            listado_archivos_3des = f.listar(ruta)
+            # Obtiene el fichero seleccionado en el desplegable con su ruta completa
+            ruta_completa_3des = os.path.join(ruta, archivo2_3des)
+            # Obtiene el contenido del fichero que seleccionamos en el desplegable
+            with open(ruta_completa_3des, 'r') as file_3des:
+                contenido2_3des = file_3des.read()
+            # Ruta con el fichero de la clave del desplegable
+            ruta_completa2_3des = os.path.join(rutaclaves, key_decrypt_3des)
+            # Abrimos el fichero con la clave y leemos su contenido
+            with open(ruta_completa2_3des, 'r') as file2_3des:
+                contenidoclave_3des = file2_3des.read()
+            # Finalmente desencriptamos el contenido del fichero seleccionado con la clave y el fichero elegidos
+            decrypted_message_3des = f.decrypt_message_3des(contenido2_3des, contenidoclave_3des)
 
-@app.route("/casimetrico/")
+            return render_template('csimetrico.html', 
+                                   listado_samba=listado_samba,
+                                   listado_claves_samba=listado_claves_samba, 
+                                   listado_claves=listado_claves, 
+                                   listado_archivos_aes=listado_archivos_aes, 
+                                   contenido_aes=contenido_aes, 
+                                   listado_archivos_3des=listado_archivos_3des, 
+                                   contenido_3des=contenido_3des, 
+                                   decrypted_message_3des=decrypted_message_3des,
+                                   mode_aes=mode_aes, 
+                                   mode_3des=mode_3des)
+
+        elif mode_aes == 'subir_samba':
+            
+            ruta_completa2_aes = os.path.join(rutaclaves, key_decrypt_aes)
+            ruta_completa_aes = os.path.join(ruta, archivo2_aes)
+            f.cargar_samba(ruta_completa_aes,smb_connection)
+            f.cargar_claves_samba(ruta_completa2_aes,smb_connection)
+            listado_archivos_aes = f.listar(ruta)
+            listado_claves = f.listarclaves(rutaclaves)
+            listado_archivos_3des = f.listar(ruta)
+            listado_samba = f.listar_samba(smb_connection)
+            listado_archivos_aes = f.listar(ruta)
+            listado_claves_samba = f.listar_claves_samba(smb_connection)
+            print("Listado actualizado in the night:", listado_samba)
+
+            return render_template('csimetrico.html', 
+                                   listado_samba=listado_samba, 
+                                   listado_claves_samba=listado_claves_samba,
+                                   listado_claves=listado_claves, 
+                                   listado_archivos_aes=listado_archivos_aes, 
+                                   contenido_aes=contenido_aes, 
+                                   listado_archivos_3des=listado_archivos_3des, 
+                                   contenido_3des=contenido_3des,  
+                                   mode_aes=mode_aes,
+                                   mode_samba=mode_samba, 
+                                   mode_3des=mode_3des)
+        elif 'archivo_samba' in request.form and 'mode_samba' in request.form:
+        
+            listado_archivos_aes = f.listar(ruta)
+            listado_claves = f.listarclaves(rutaclaves)
+            listado_archivos_3des = f.listar(ruta)
+            listado_samba = f.listar_samba(smb_connection)
+
+            if request.form['mode_samba'] == 'descargar_samba':
+                # Obtiene el fichero seleccionado en el desplegable con su ruta completa
+                archivo_samba_seleccionado = request.form['archivo_samba']
+                clave_samba_seleccionado = request.form['clave_samba']
+                local_file_path = f.descargar_sambaclave(smb_connection, clave_samba_seleccionado)
+                # Llamamos a la función download_samba para descargar el archivo desde Samba
+                local_file_path = f.descargar_samba(smb_connection, archivo_samba_seleccionado)
+                listado_archivos_aes = f.listar(ruta)
+                listado_claves = f.listarclaves(rutaclaves)
+                listado_archivos_3des = f.listar(ruta)
+                listado_samba = f.listar_samba(smb_connection)
+
+        return render_template('csimetrico.html', 
+                           listado_samba=listado_samba, 
+                           listado_claves=listado_claves, 
+                           listado_archivos_aes=listado_archivos_aes, 
+                           listado_claves_samba=listado_claves_samba,
+                           contenido_aes=contenido_aes, 
+                           listado_archivos_3des=listado_archivos_3des, 
+                           contenido_3des=contenido_3des, 
+                           mode_aes=mode_aes, 
+                           mode_3des=mode_3des)
+
+    return render_template("csimetrico.html",
+                           listado_samba=listado_samba, 
+                           listado_claves=listado_claves, 
+                           listado_archivos_aes=listado_archivos_aes, 
+                           listado_archivos_3des=listado_archivos_3des,
+                           listado_claves_samba=listado_claves_samba
+                           )
+@app.route("/casimetrico", methods=['GET', 'POST'])
 def casimetrico():
-    return render_template("casimetrico.html")
+    encrypted_file_name = None
+    decrypted_file_name = None
+    if request.method == 'POST':
+        operation = request.form.get('operation')
+        if operation == 'generate_keys':
+            private_key, public_key = f.generate_keys()
+            with open(os.path.join('claves', 'private_key.pem'), 'wb') as private_key_file:
+                private_key_file.write(f.export_private_key(private_key))
+            with open(os.path.join('claves', 'public_key.pem'), 'wb') as public_key_file:
+                public_key_file.write(f.export_public_key(public_key))
+        elif operation == 'import_key':
+            public_key_file = request.files["public_key"]
+            public_key = f.import_public_key(public_key_file.read())
+            with open(os.path.join('claves', 'imported_public_key.pem'), 'wb') as imported_public_key_file:
+                imported_public_key_file.write(f.export_public_key(public_key))
+            return "Clave pública importada con éxito"
+        elif operation == 'export_key':
+            with open(os.path.join('claves', 'public_key.pem'), 'rb') as public_key_file:
+                public_key = f.import_public_key(public_key_file.read())
+            response = make_response(f.export_public_key(public_key))
+            response.headers.set('Content-Type', 'application/octet-stream')
+            response.headers.set('Content-Disposition', 'attachment', filename='public_key.pem')
+            return response
+        elif operation == 'encrypt_message':
+            message = request.form["message"].encode('utf-8')
+            with open(os.path.join('claves', 'public_key.pem'), 'rb') as public_key_file:
+                public_key = f.import_public_key(public_key_file.read())
+            encrypted_message = f.encrypt_message(public_key, message)
+            return jsonify({"encrypted_message": base64.b64encode(encrypted_message).decode('utf-8')})
+        elif operation == 'decrypt_message':
+            encrypted_message = base64.b64decode(request.form["encrypted_message"])
+            with open(os.path.join('claves', 'private_key.pem'), 'rb') as private_key_file:
+                private_key = f.import_private_key(private_key_file.read())
+            original_message = f.decrypt_message(private_key, encrypted_message)
+            return jsonify({"original_message": original_message.decode('utf-8')})
+        elif operation == 'encrypt_file':
+            if 'file' not in request.files:
+                return "No se subió ningún archivo", 400
+            file = request.files['file']
+            with open(os.path.join('claves', 'public_key.pem'), 'rb') as public_key_file:
+                public_key = f.import_public_key(public_key_file.read())
+            encrypted_file = f.encrypt_file(public_key, file)
+            encrypted_file_name = file.filename
+            with open(os.path.join('archivos', file.filename), 'wb') as encrypted_file_file:
+                encrypted_file_file.write(encrypted_file)
+        elif operation == 'decrypt_file':
+            if 'file' not in request.form:
+                return "No se seleccionó ningún archivo", 400
+            file_name = request.form['file']
+            if 'key' not in request.form:
+                return "No se seleccionó ninguna clave", 400
+            key_name = request.form['key']
+            with open(os.path.join('claves', key_name), 'rb') as private_key_file:
+                private_key = f.import_private_key(private_key_file.read())
+            with open(os.path.join('archivos', file_name), 'rb') as file:
+                decrypted_file = f.decrypt_file(private_key, file)
+            decrypted_file_name = 'decrypted_' + file_name
+            with open(os.path.join('archivos', decrypted_file_name), 'wb') as decrypted_file_file:
+                decrypted_file_file.write(decrypted_file)
+    keys = os.listdir('claves')
+    files = os.listdir('archivos')
+    return render_template("casimetrico.html", keys=keys, files=files, decrypted_file_name=decrypted_file_name, encrypted_file_name=encrypted_file_name)
 
+@app.route("/chibrido/")
+def chibrido():
+    ruta = './archivos'
+    rutaclaves = './claves'
+    listado_archivos_hibrido = f.listar(ruta)
+    listado_claves = f.listarclaves(rutaclaves)
+    archivos_hibrido = request.files.getlist('archivos_hibrido')
+    archivos_hibrido2 = request.files.getlist('archivos_hibrido')
+    mode_aes = request.form.get('mode_aes')
+
+    if request.method == 'POST':
+        contenido_hibrido = ""
+        archivos_hibrido = request.files.getlist('archivos_hibrido')
+        archivos_hibrido2 = request.form.get('archivos_hibrido')
+        mode_aes = request.form.get('mode_aes')
+        key_hibrido = request.form.get('key_hibrido')
+
+        if mode_aes == 'encrypt_aes':
+            # Seleccionamos el primer fichero para AES
+            docu_hibrido = archivos_hibrido[0]
+            # Lee el contenido y lo guarda en una variable
+            contenido_hibrido = docu_hibrido.read().decode('utf-8')
+            # Recoge el nombre del fichero del formulario
+            nuevo_nombre_hibrido = request.form['archivo_nombre_hibrido']
+            # Añade una extensión a tu elección, por ejemplo ".txt"
+            filename_hibrido = secure_filename(nuevo_nombre_hibrido + "_enchibrido.txt")
+            clave_hibrido = f.generar_cadena()
+            nombre_archivo_hibrido = secure_filename(key_hibrido + "_clave_AEShib.txt")
+
+            # Guarda la clave AES en un archivo
+            with open(os.path.join(rutaclaves, nombre_archivo_hibrido), "w") as file_hibrido:
+                file_hibrido.write(clave_hibrido)
+
+            # Abre el archivo para escritura
+            with open(os.path.join(ruta, filename_hibrido), "w") as file_hibrido:
+                file_hibrido.write(f.encrypt_message_AES(contenido_hibrido, clave_hibrido))
+
+            listado_archivos_hibrido = f.listar(ruta)
+            listado_claves = f.listarclaves(rutaclaves)
+
+        return render_template("chibrido.html", mode_aes=mode_aes, listado_claves=listado_claves, listado_archivos_hibrido=listado_archivos_hibrido, contenido_hibrido=contenido_hibrido)
+
+    return render_template("chibrido.html", archivos_hibrido=archivos_hibrido, archivos_hibrido2=archivos_hibrido2, mode_aes=mode_aes, listado_claves=listado_claves, listado_archivos_hibrido=listado_archivos_hibrido, contenido_hibrido=contenido_hibrido)
 
 @app.route("/about/")
 def about():

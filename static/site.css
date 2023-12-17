@@ -3,6 +3,24 @@
     color: blue;
 }
 
+#boton{
+    background-color: #87CEEB;
+    border-radius: 20px;
+    padding: 8px;
+}
+
+#subida{
+    background-color: rgb(169, 252, 169);
+    border-radius: 20px;
+    padding: 8px;
+}
+
+#descargas{
+    background-color: rgb(169, 252, 169);
+    border-radius: 20px;
+    padding: 8px;
+}
+
 .header {
     background: #f4f4f4;
     color: #333;
