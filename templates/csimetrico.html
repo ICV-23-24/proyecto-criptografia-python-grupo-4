@@ -72,7 +72,7 @@ C. Simétrico
                     {% endfor %}
                 </select>
                 <br><br>
-                <label for="key_decrypt_aes">Clave AES:</label>
+                <label for="key_decrypt_aes">Claves:</label>
                 <select name="key_decrypt_aes" id="key_decrypt_aes">
                     {% for clave in listado_claves %}
                         <option value="{{ clave }}">{{ clave }}</option>
@@ -83,9 +83,6 @@ C. Simétrico
                 <input type="hidden" name="mode_aes" value="subir_samba">
             </form>
 
-    <!-- Corrección: Eliminar etiqueta de cierre innecesaria -->
-    <!-- <form action="/csimetrico" method="post" enctype="multipart/form-data"></form> -->
-
             <h2>Descargar Archivo desde Samba</h2>
             <form action="/csimetrico" method="post" enctype="multipart/form-data">
                 <label for="archivo_samba">Seleccionar archivo en Samba:</label>
@@ -94,7 +91,7 @@ C. Simétrico
                         <option value="{{ archivo_samba }}">{{ archivo_samba }}</option>
                     {% endfor %}
                 </select><br><br>
-                <label for="clave_samba">Clave AES:</label>
+                <label for="clave_samba">Claves:</label>
                 <select name="clave_samba" id="clave_samba">
                     {% for archivo_samba in listado_claves_samba %}
                         <option value="{{ archivo_samba }}">{{ archivo_samba }}</option>

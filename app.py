@@ -2,11 +2,74 @@ import base64
 from datetime import datetime
 import os
 from flask import Flask, jsonify, make_response, render_template, request, redirect, url_for
+from flask_login import LoginManager, UserMixin, current_user, login_required, login_user, logout_user
+from flask_bcrypt import Bcrypt
 import functions as f
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'pedro'  # Reemplaza con una clave secreta fuerte
 
+# Configuración de Flask-Login
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+bcrypt = Bcrypt(app)
+
+contrasena_permitida = "pedro"
+usuarios_permitidos = {'pedro', 'luis', 'aurora', 'luisa'}
+class User(UserMixin):
+    def __init__(self, username):
+        self.id = username
+
+@login_manager.user_loader
+def load_user(user_id):
+    if user_id in usuarios_permitidos:
+        return User(user_id)
+    return None
+
+def load_user(user_id):
+    # Aquí deberías implementar la carga del usuario desde tu sistema de usuarios
+    user = User()
+    user.id = user_id
+    return user
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    if current_user.is_authenticated:
+        # Si el usuario está autenticado, redirige a la página de inicio ('home')
+        return redirect(url_for('home'))
+    else:
+        # Si el usuario no está autenticado, redirige a la página de inicio de sesión ('login')
+        return redirect(url_for('login'))
+
+
+def password_valida(password):
+    # Verifica la contraseña sin aplicar ningún hash
+    return password == contrasena_permitida
+
+# Ruta de inicio de sesión
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        # Verificar si el usuario está en el conjunto de usuarios permitidos
+        if username in usuarios_permitidos and password_valida(password):
+            # Puedes agregar una lógica adicional de autenticación si es necesario
+            # En este ejemplo, simplemente autenticamos al usuario con Flask-Login
+            user = User(username)
+            login_user(user)
+            return redirect(url_for('home'))
+
+    return render_template('login.html')
+
+# Ruta de cierre de sesión
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
 
 # Replace the existing home function with the one below
 @app.route("/")
@@ -240,10 +303,21 @@ def csimetrico():
                            listado_claves_samba=listado_claves_samba
                            )
 @app.route("/casimetrico", methods=['GET', 'POST'])
+@login_required 
 def casimetrico():
+    contenidoasi = ""
     encrypted_file_name = None
     decrypted_file_name = None
+    smb_connection = f.conectar_samba()
+    ruta = './archivos'
+    rutaclaves = './claves'
+    listado_archivos = f.listar(ruta)
+    listado_claves = f.listarclaves(rutaclaves)
+    listado_samba = f.listar_samba(smb_connection)
+    listado_claves_samba = f.listar_claves_samba(smb_connection)
     if request.method == 'POST':
+        keysfile = request.form.get('keysfile')
+        archivos = request.form.get('archivos')
         operation = request.form.get('operation')
         if operation == 'generate_keys':
             private_key, public_key = f.generate_keys()
@@ -251,31 +325,19 @@ def casimetrico():
                 private_key_file.write(f.export_private_key(private_key))
             with open(os.path.join('claves', 'public_key.pem'), 'wb') as public_key_file:
                 public_key_file.write(f.export_public_key(public_key))
-        elif operation == 'import_key':
-            public_key_file = request.files["public_key"]
-            public_key = f.import_public_key(public_key_file.read())
-            with open(os.path.join('claves', 'imported_public_key.pem'), 'wb') as imported_public_key_file:
-                imported_public_key_file.write(f.export_public_key(public_key))
-            return "Clave pública importada con éxito"
-        elif operation == 'export_key':
-            with open(os.path.join('claves', 'public_key.pem'), 'rb') as public_key_file:
-                public_key = f.import_public_key(public_key_file.read())
-            response = make_response(f.export_public_key(public_key))
-            response.headers.set('Content-Type', 'application/octet-stream')
-            response.headers.set('Content-Disposition', 'attachment', filename='public_key.pem')
-            return response
-        elif operation == 'encrypt_message':
-            message = request.form["message"].encode('utf-8')
-            with open(os.path.join('claves', 'public_key.pem'), 'rb') as public_key_file:
-                public_key = f.import_public_key(public_key_file.read())
-            encrypted_message = f.encrypt_message(public_key, message)
-            return jsonify({"encrypted_message": base64.b64encode(encrypted_message).decode('utf-8')})
-        elif operation == 'decrypt_message':
-            encrypted_message = base64.b64decode(request.form["encrypted_message"])
-            with open(os.path.join('claves', 'private_key.pem'), 'rb') as private_key_file:
-                private_key = f.import_private_key(private_key_file.read())
-            original_message = f.decrypt_message(private_key, encrypted_message)
-            return jsonify({"original_message": original_message.decode('utf-8')})
+        # elif operation == 'import_key':
+        #     public_key_file = request.files["public_key"]
+        #     public_key = f.import_public_key(public_key_file.read())
+        #     with open(os.path.join('claves', 'imported_public_key.pem'), 'wb') as imported_public_key_file:
+        #         imported_public_key_file.write(f.export_public_key(public_key))
+        #     return "Clave pública importada con éxito"
+        # elif operation == 'export_key':
+        #     with open(os.path.join('claves', 'public_key.pem'), 'rb') as public_key_file:
+        #         public_key = f.import_public_key(public_key_file.read())
+        #     response = make_response(f.export_public_key(public_key))
+        #     response.headers.set('Content-Type', 'application/octet-stream')
+        #     response.headers.set('Content-Disposition', 'attachment', filename='public_key.pem')
+        #     return response
         elif operation == 'encrypt_file':
             if 'file' not in request.files:
                 return "No se subió ningún archivo", 400
@@ -300,9 +362,55 @@ def casimetrico():
             decrypted_file_name = 'decrypted_' + file_name
             with open(os.path.join('archivos', decrypted_file_name), 'wb') as decrypted_file_file:
                 decrypted_file_file.write(decrypted_file)
+            with open(os.path.join('archivos', decrypted_file_name), 'r') as file2:
+                contenidoasi = file2.read()
+        elif operation == 'subir_samba':
+            rutaclaves = './claves'
+            keysfile = request.form.get('keysfile')
+            ruta_completa_rsakeys = os.path.join(rutaclaves, keysfile)
+            ruta_completa_rsafiles = os.path.join(ruta, archivos)
+            f.cargar_samba(ruta_completa_rsafiles,smb_connection)
+            f.cargar_claves_samba(ruta_completa_rsakeys,smb_connection)
+            listado_archivos = f.listar(ruta)
+            listado_claves = f.listarclaves(rutaclaves)
+            listado_samba = f.listar_samba(smb_connection)
+            listado_claves_samba = f.listar_claves_samba(smb_connection)
+            print("Listado actualizado in the noon:", listado_samba)
+
+            return render_template('casimetrico.html',
+                                   contenidoasi=contenidoasi,
+                                   decrypted_file_name=decrypted_file_name, 
+                                   encrypted_file_name=encrypted_file_name, 
+                                   listado_samba=listado_samba, 
+                                   listado_claves_samba=listado_claves_samba,
+                                   listado_claves=listado_claves, 
+                                   listado_archivos=listado_archivos
+                                   )
+        elif operation == 'descargar_samba':
+            archivo_samba_seleccionado = request.form.get('archivo_samba')
+            clave_samba_seleccionado = request.form.get('clave_samba')
+            
+            f.descargar_sambaclave(smb_connection, clave_samba_seleccionado)
+                # Llamamos a la función download_samba para descargar el archivo desde Samba
+            f.descargar_samba(smb_connection, archivo_samba_seleccionado)
+            # Actualiza listados después de la descarga desde Samba
+            listado_archivos = f.listar(ruta)
+            listado_claves = f.listarclaves(rutaclaves)
+            listado_samba = f.listar_samba(smb_connection)
+            listado_claves_samba = f.listar_claves_samba(smb_connection)
+
     keys = os.listdir('claves')
     files = os.listdir('archivos')
-    return render_template("casimetrico.html", keys=keys, files=files, decrypted_file_name=decrypted_file_name, encrypted_file_name=encrypted_file_name)
+    return render_template("casimetrico.html",
+                           contenidoasi=contenidoasi, 
+                           keys=keys, files=files, 
+                           decrypted_file_name=decrypted_file_name, 
+                           encrypted_file_name=encrypted_file_name,
+                           listado_samba=listado_samba, 
+                           listado_claves_samba=listado_claves_samba,
+                           listado_claves=listado_claves, 
+                           listado_archivos=listado_archivos
+                           )
 
 
 @app.route("/about/")
@@ -335,4 +443,4 @@ def get_data():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=3000)

@@ -3,58 +3,108 @@
 C. Asimétrico
 {% endblock %}
 {% block content %}
-<h2>Encriptar archivo</h2>
+<div style="display: flex; justify-content: flex-start;">
+    <div style="width: 35%;">
+        <h2>Encriptar archivo</h2>
 
-<!-- Botón para generar claves -->
-<form action="/casimetrico" method="post">
-    <input type="hidden" name="operation" value="generate_keys">
-    <button type="submit">Generar claves</button><br><br>
-</form>
+        <!-- Botón para generar claves -->
+        <form action="/casimetrico" method="post">
+            <input type="hidden" name="operation" value="generate_keys">
+            <button type="submit">Generar claves</button><br><br>
+        </form>
 
-<!-- Desplegable para seleccionar una clave -->
-{% if keys %}
-    <select name="key">
-    {% for key in keys %}
-        <option value="{{ key }}">{{ key }}</option>
-    {% endfor %}
-    </select><br><br>
-{% endif %}
+        <!-- Desplegable para seleccionar una clave -->
+        {% if keys %}
+            <select name="key">
+            {% for key in keys %}
+                <option value="{{ key }}">{{ key }}</option>
+            {% endfor %}
+            </select><br><br>
+        {% endif %}
 
-<!-- Botón para encriptar un archivo -->
-<form action="/casimetrico" method="post" enctype="multipart/form-data">
-    <input type="hidden" name="operation" value="encrypt_file">
-    <input type="file" name="file">
-    <button type="submit" id="boton">Encriptar archivo</button>
-</form>
+            <!-- Botón para encriptar un archivo -->
+        <form action="/casimetrico" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="operation" value="encrypt_file">
+            <input type="file" name="file">
+            <button type="submit" id="boton">Encriptar archivo</button>
+        </form>
 
-{% if encrypted_file_name %}
-    <p>Nombre del archivo encriptado: {{ encrypted_file_name }}</p>
-{% endif %}
+        {% if encrypted_file_name %}
+            <p>Nombre del archivo encriptado: {{ encrypted_file_name }}</p>
+        {% endif %}
 
-<h2>Desencriptar archivo</h2>
+        <h2>Desencriptar archivo</h2>
 
-<!-- Formulario para seleccionar el archivo que se desencriptará y la clave pública -->
-<form action="/casimetrico" method="post" enctype="multipart/form-data">
-    <input type="hidden" name="operation" value="decrypt_file">
-    <!-- Desplegable para seleccionar la clave pública -->
-    <select name="key">
-        {% for key in keys %}
-            <option value="{{ key }}">{{ key }}</option>
-        {% endfor %}
-    </select>
-    <!-- Desplegable para seleccionar el archivo que se desencriptará -->
-    <select name="file">
-        {% for file in files %}
-            <option value="{{ file }}">{{ file }}</option>
-        {% endfor %}
-    </select>
-    <button type="submit" id="boton">Desencriptar archivo</button>
-</form>
+        <!-- Formulario para seleccionar el archivo que se desencriptará y la clave pública -->
+        <form action="/casimetrico" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="operation" value="decrypt_file">
+            <!-- Desplegable para seleccionar la clave pública -->
+            <select name="key">
+                {% for key in keys %}
+                    <option value="{{ key }}">{{ key }}</option>
+                {% endfor %}
+            </select>
+            <!-- Desplegable para seleccionar el archivo que se desencriptará -->
+            <select name="file">
+                {% for file in files %}
+                    <option value="{{ file }}">{{ file }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" id="boton">Desencriptar archivo</button>
+        </form><br><br>
 
-<!-- Desplegable para mostrar el nombre del archivo que se desencripta -->
-{% if decrypted_file_name %}
-    <p>Archivo desencriptado: {{ decrypted_file_name }}</p>
-{% endif %}
+        <!-- Desplegable para mostrar el nombre del archivo que se desencripta -->
+        {% if decrypted_file_name %}
+            <h2>Mensaje desencriptado:</h2>
+            <p>{{ contenidoasi }}</p>
+        {% endif %}
+
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('logout') }}">Cerrar Sesión</a>
+        {% endif %}
+    </div>
+    <div style="width: 35%;">
+        <h1>Gestión de archivos con Samba</h1>
+
+        <h2>Subir Archivo a Samba</h2>
+        <form action="/casimetrico" method="post" enctype="multipart/form-data">
+            <label for="archivo_aes">Fichero a subir:</label>
+            <select name="archivos" id="archivos">
+                {% for archivo in listado_archivos %}
+                    <option value="{{ archivo }}">{{ archivo }}</option>
+                {% endfor %}
+            </select>
+            <br><br>
+            <label for="key_decrypt_aes">Claves:</label>
+            <select name="keysfile" id="keysfile">
+                {% for clave in listado_claves %}
+                    <option value="{{ clave }}">{{ clave }}</option>
+                {% endfor %}
+            </select>
+            <br><br>
+            <button type="submit" id="subida">Subir a Samba <i class="fa-solid fa-cloud-arrow-up"></i></button>
+            <input type="hidden" name="operation" value="subir_samba">
+        </form>
+
+        <h2>Descargar Archivo desde Samba</h2>
+        <form action="/casimetrico" method="post" enctype="multipart/form-data">
+            <label for="archivo_samba">Seleccionar archivo en Samba:</label>
+            <select name="archivo_samba" id="archivo_samba">
+                {% for archivo_samba in listado_samba %}
+                    <option value="{{ archivo_samba }}">{{ archivo_samba }}</option>
+                {% endfor %}
+            </select><br><br>
+            <label for="clave_samba">Claves:</label>
+            <select name="clave_samba" id="clave_samba">
+                {% for archivo_samba in listado_claves_samba %}
+                    <option value="{{ archivo_samba }}">{{ archivo_samba }}</option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="operation" value="descargar_samba"><br><br>
+            <button type="submit" id="descargas">Descargar desde Samba <i class="fa-solid fa-cloud-arrow-down"></i></button>
+        </form> 
+    </div>
+</div>
 
 {% endblock %}
 
