@@ -3,5 +3,90 @@
 Inicio
 {% endblock %}
 {% block content %}
-<p>La página de inicio contendrá un enlace a las diferentes funcionalidades de la app</p>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Inicio - Criptografía</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+            border: 1px solid black;
+            border-radius: 10px;
+        }
+
+        p {
+            line-height: 1.5;
+            color: #666;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        body, h1, h2, h3, p, ul, li {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2, h3 {
+            color: #007BFF;
+        }
+
+        .section {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Bienvenido a nuestra Página de Criptografía</h1>
+    
+        <div class="section">
+            <h2>Cifrado y Descifrado</h2>
+            <p>La criptografía es el arte de proteger la información mediante técnicas de cifrado y descifrado. Aquí exploramos dos tipos principales de cifrado: simétrico y asimétrico.</p>
+        </div>
+    
+        <div class="section">
+            <h3>Cifrado Simétrico</h3>
+            <p>En el cifrado simétrico, se utiliza la misma clave para cifrar y descifrar la información. Esto proporciona una forma eficiente de proteger los datos. Aquí hay dos algoritmos comunes:</p>
+            <ul>
+                <li><strong>AES (Advanced Encryption Standard):</strong> AES es un estándar de cifrado ampliamente utilizado. Utiliza claves de 128, 192 o 256 bits y ha sido adoptado globalmente por su seguridad y eficiencia.</li>
+                <li><strong>3DES (Triple Data Encryption Standard):</strong> 3DES es una versión mejorada del antiguo DES. Utiliza tres claves de 56 bits cada una y realiza tres operaciones de cifrado consecutivas. Aunque es más seguro que DES, AES es preferido en aplicaciones modernas.</li>
+            </ul>
+        </div>
+        <div class="section">
+            <h3>Cifrado Asimétrico</h3>
+            <p>El cifrado asimétrico utiliza un par de claves: una pública y otra privada. La clave pública se comparte, mientras que la clave privada se mantiene segura. Esto permite operaciones seguras de cifrado y descifrado.</p>
+        </div>
+    
+        <div class="section">
+            <h2>Seguridad y Consideraciones</h2>
+            <p>Es importante entender las mejores prácticas de seguridad al trabajar con algoritmos de cifrado. La elección de algoritmos seguros y la gestión adecuada de claves son fundamentales para garantizar la integridad y confidencialidad de los datos.</p>
+        </div>
+    
+</body>
 {% endblock %}
