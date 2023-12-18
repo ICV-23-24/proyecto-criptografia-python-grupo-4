@@ -1,0 +1,16 @@
+Creado el entorno:
+
+pip install flask
+
+pip install pycryptodomex
+
+pip install requests
+
+pip install cryptography
+
+pip install pysmb
+
+pip install Flask-Bcrypt
+
+pip install Flask-Login
+

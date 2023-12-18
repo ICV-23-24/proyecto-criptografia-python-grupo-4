@@ -1,37 +1,155 @@
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-" crossorigin="anonymous" />
+</head>
+<body>
 {% extends "layout.html" %}
 {% block title %}
 C. Simétrico
 {% endblock %}
 {% block content %}
-<h1>Encriptar y desencriptar mensaje con AES</h1>
+<div style="display: flex; justify-content: space-between;">
+        <div style="width: 35%;">
+            <h1>Encriptado local con AES</h1>
 
-    <h2>Encriptar Mensaje</h2>
-    <form method="post">
-        <label for="message">Mensaje:</label><br>
-        <input type="text" id="message" name="message"><br><br>
-        <label for="key">Clave:</label><br>
-        <input type="text" id="key" name="key"><br><br>
-        <input type="hidden" name="mode" value="encrypt">
-        <input type="submit" value="Encriptar">
-    </form>
+            <h2>Encriptar Mensaje con AES</h2>
+            <form action="/csimetrico" method="post" enctype="multipart/form-data">
+                <input type="file" name="archivo_aes" id="seleccion"><br><br>
+                <label for="archivo_nombre_aes">Nombre del Archivo:</label>
+                <input type="text" id="archivo_nombre_aes" name="archivo_nombre_aes" required><br><br>
+                <label for="key_aes">Clave AES:</label>
+                <input type="text" id="key_aes" name="key_aes"><br><br>
+                <input type="hidden" name="mode_aes" value="encrypt_aes">
+                <input type="submit" value="Encriptar con AES" id="boton"><br><br>
+            </form>     
 
-    {% if encrypted_message %}
-        <h2>Mensaje Encriptado:</h2>
-        <p>{{ encrypted_message }}</p>
-    {% endif %}
+             
 
-    <h2>Desencriptar Mensaje</h2>
-    <form method="post">
-        <label for="encrypted_message">Mensaje Encriptado:</label><br>
-        <input type="text" id="encrypted_message" name="message"><br><br>
-        <label for="key_decrypt">Clave:</label><br>
-        <input type="text" id="key_decrypt" name="key"><br><br>
-        <input type="hidden" name="mode" value="decrypt">
-        <input type="submit" value="Desencriptar">
-    </form>
+            {% if encrypted_message_aes %}
+                <h2>Mensaje Encriptado con AES:</h2>
+                <p>{{ encrypted_message_aes }}</p>
+            {% endif %} 
 
-    {% if decrypted_message %}
-        <h2>Mensaje:</h2>
-        <p>{{ decrypted_message }}</p>
-    {% endif %}
+        
+            <h2>Desencriptar Mensaje con AES</h2>
+            <form action="/csimetrico" method="post" enctype="multipart/form-data">
+                <label for="archivo">Fichero a desencriptar con AES:</label>
+                <select name="archivo_aes" id="archivo2_aes">
+                    {% for archivo in listado_archivos_aes %}
+                        <option value="{{ archivo }}">{{ archivo }}</option>
+                    {% endfor %}
+                </select>
+                <br><br>
+                <label for="key_decrypt_aes">Clave AES:</label>
+                <select name="key_decrypt_aes" id="key_decrypt_aes">
+                    {% for clave in listado_claves %}
+                        <option value="{{ clave }}">{{ clave }}</option>
+                    {% endfor %}
+                </select>
+                <br><br>
+                <input type="hidden" name="mode_aes" value="decrypt_aes">
+                <input type="submit" value="Desencriptar con AES" id="boton">
+                <br><br>
+            </form>
+
+        
+
+            {% if decrypted_message_aes %}
+                <h2>Mensaje Desencriptado con AES:</h2>
+                <p>{{ decrypted_message_aes }}</p>
+            {% endif %}
+        </div>
+        <div style="width: 35%;">
+            <h1>Gestión de archivos con Samba</h1>
+
+            <h2>Subir Archivo a Samba</h2>
+            <form action="/csimetrico" method="post" enctype="multipart/form-data">
+                <label for="archivo_aes">Fichero a subir:</label>
+                <select name="archivo_aes" id="archivo2_aes">
+                    {% for archivo in listado_archivos_aes %}
+                        <option value="{{ archivo }}">{{ archivo }}</option>
+                    {% endfor %}
+                </select>
+                <br><br>
+                <label for="key_decrypt_aes">Claves:</label>
+                <select name="key_decrypt_aes" id="key_decrypt_aes">
+                    {% for clave in listado_claves %}
+                        <option value="{{ clave }}">{{ clave }}</option>
+                    {% endfor %}
+                </select>
+                <br><br>
+                <button type="submit" id="subida">Subir a Samba <i class="fa-solid fa-cloud-arrow-up"></i></button>
+                <input type="hidden" name="mode_aes" value="subir_samba">
+            </form>
+
+            <h2>Descargar Archivo desde Samba</h2>
+            <form action="/csimetrico" method="post" enctype="multipart/form-data">
+                <label for="archivo_samba">Seleccionar archivo en Samba:</label>
+                <select name="archivo_samba" id="archivo_samba">
+                    {% for archivo_samba in listado_samba %}
+                        <option value="{{ archivo_samba }}">{{ archivo_samba }}</option>
+                    {% endfor %}
+                </select><br><br>
+                <label for="clave_samba">Claves:</label>
+                <select name="clave_samba" id="clave_samba">
+                    {% for archivo_samba in listado_claves_samba %}
+                        <option value="{{ archivo_samba }}">{{ archivo_samba }}</option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="mode_samba" value="descargar_samba"><br><br>
+                <button type="submit" id="descargas">Descargar desde Samba <i class="fa-solid fa-cloud-arrow-down"></i></button>
+            </form> 
+        </div>
+
+
+    <div style="width: 35%;">
+        <h1>Encriptar y desencriptar mensaje con 3DES</h1>
+
+        <h2>Encriptar Mensaje con 3DES</h2>
+        <form action="/csimetrico" method="post" enctype="multipart/form-data">
+            <input type="file" name="archivo_3des" id="seleccion"><br><br>
+            <label for="archivo_nombre_3des">Nombre del Archivo:</label>
+            <input type="text" id="archivo_nombre_3des" name="archivo_nombre_3des" required><br><br>
+            <label for="key_3des">Clave 3DES:</label>
+            <input type="text" id="key_3des" name="key_3des"><br><br>
+            <input type="hidden" name="mode_3des" value="encrypt_3des">
+            <input type="submit" value="Encriptar con 3DES" id="boton">
+        </form>
+        
+        {% if encrypted_message_3des %}
+            <h2>Mensaje Encriptado con 3DES:</h2>
+            <p>{{ encrypted_message_3des }}</p>
+            
+        {% endif %}
+
+        
+        <h2>Desencriptar Mensaje con 3DES</h2>
+        <form action="/csimetrico" method="post" enctype="multipart/form-data">
+            <label for="archivo2_3des">Fichero a desencriptar con 3DES:</label>
+            <select name="archivo_3des" id="archivo2_3des">
+                {% for archivo in listado_archivos_3des %}
+                    <option value="{{ archivo }}">{{ archivo }}</option>
+                {% endfor %}
+            </select>
+            <br><br>
+            <label for="key_decrypt_3des">Clave 3DES:</label>
+            <select name="key_decrypt_3des" id="key_decrypt_3des">
+                {% for clave in listado_claves %}
+                    <option value="{{ clave }}">{{ clave }}</option>
+                {% endfor %}
+            </select>
+            <br><br>
+            <input type="hidden" name="mode_3des" value="decrypt_3des">
+            <input type="submit" value="Desencriptar con 3DES" id="boton">
+            <br><br>
+        </form>
+
+       
+
+        {% if decrypted_message_3des %}
+            <h2>Mensaje Desencriptado con 3DES:</h2>
+            <p>{{ decrypted_message_3des }}</p>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}
+</body>
