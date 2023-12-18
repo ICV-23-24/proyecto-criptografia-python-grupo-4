@@ -279,4 +279,3 @@ def decrypt_file(private_key, encrypted_file):
         )
     )
     return decrypted_data    
-

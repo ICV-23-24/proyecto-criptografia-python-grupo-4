@@ -412,7 +412,6 @@ def casimetrico():
                            listado_archivos=listado_archivos
                            )
 
-
 @app.route("/about/")
 def about():
     return render_template("about.html")
